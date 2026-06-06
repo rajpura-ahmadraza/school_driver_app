@@ -1,0 +1,181 @@
+﻿Analyzing school_driver_app...                                  
+
+   info - 'encryptedSharedPreferences' is deprecated and shouldn't be used. EncryptedSharedPreferences is deprecated and will be removed in v11. The Jetpack Security library is deprecated by Google. Your data will be automatically migrated to custom ciphers on first access. Remove this parameter - it will be ignored - lib\core\api\api_client.dart:17:30 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance - lib\core\api\api_client.dart:73:14 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\core\api\api_client.dart:76:14 - prefer_const_constructors
+   info - Unnecessary 'const' keyword - lib\core\theme\app_theme.dart:22:27 - unnecessary_const
+   info - Unnecessary 'const' keyword - lib\core\theme\app_theme.dart:97:27 - unnecessary_const
+warning - The declaration '_copyToClipboard' isn't referenced - lib\features\auth\forgot_password_screen.dart:107:8 - unused_element
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\auth\forgot_password_screen.dart:282:40 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\auth\forgot_password_screen.dart:289:36 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\auth\forgot_password_screen.dart:305:35 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\auth\forgot_password_screen.dart:341:35 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\auth\forgot_password_screen.dart:352:32 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\auth\forgot_password_screen.dart:396:34 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\auth\forgot_password_screen.dart:526:48 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\auth\login_screen.dart:84:24 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\auth\login_screen.dart:147:37 - ambiguous_extension_member_access
+  error - The name '_LangTile' isn't a class - lib\features\auth\login_screen.dart:156:23 - creation_with_non_type
+  error - The name '_LangTile' isn't a class - lib\features\auth\login_screen.dart:161:23 - creation_with_non_type
+  error - The name '_LangTile' isn't a class - lib\features\auth\login_screen.dart:166:23 - creation_with_non_type
+  error - The name '_LoginHeader' isn't a class - lib\features\auth\login_screen.dart:232:21 - creation_with_non_type
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\auth\login_screen.dart:298:54 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\auth\login_screen.dart:322:57 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\auth\login_screen.dart:361:68 - ambiguous_extension_member_access
+  error - The method '_PremiumSignInButton' isn't defined for the type '_LoginScreenState' - lib\features\auth\login_screen.dart:371:35 - undefined_method
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\auth\login_screen.dart:407:57 - ambiguous_extension_member_access
+  error - Expected to find ';' - lib\features\auth\login_screen.dart:437:3 - expected_token
+  error - Expected to find ')' - lib\features\auth\login_screen.dart:438:1 - expected_token
+  error - Classes can't be declared inside other classes - lib\features\auth\login_screen.dart:441:1 - class_in_class
+  error - Expected a class member - lib\features\auth\login_screen.dart:441:20 - expected_class_member
+   info - The variable name 'StatefulWidget' isn't a lowerCamelCase identifier - lib\features\auth\login_screen.dart:441:28 - non_constant_identifier_names
+  error - Methods must have an explicit list of parameters - lib\features\auth\login_screen.dart:441:28 - missing_method_parameters
+  error - The name '_LoginHeader' isn't a class - lib\features\auth\login_screen.dart:442:9 - creation_with_non_type
+  error - State isn't a type - lib\features\auth\login_screen.dart:445:3 - not_a_type
+  error - The name '_LoginHeader' isn't a type, so it can't be used as a type argument - lib\features\auth\login_screen.dart:445:9 - non_type_as_type_argument
+warning - The declaration 'createState' isn't referenced - lib\features\auth\login_screen.dart:445:23 - unused_element
+  error - The method '_LoginHeaderState' isn't defined for the type '_LoginScreenState' - lib\features\auth\login_screen.dart:445:40 - undefined_method
+  error - Classes can't be declared inside other classes - lib\features\auth\login_screen.dart:448:1 - class_in_class
+  error - Expected a class member - lib\features\auth\login_screen.dart:448:25 - expected_class_member
+   info - The variable name 'State' isn't a lowerCamelCase identifier - lib\features\auth\login_screen.dart:448:33 - non_constant_identifier_names
+  error - Methods must have an explicit list of parameters - lib\features\auth\login_screen.dart:448:33 - missing_method_parameters
+  error - A function body must be provided - lib\features\auth\login_screen.dart:449:5 - missing_function_body
+  error - Expected a class member - lib\features\auth\login_screen.dart:449:5 - expected_class_member
+   info - The variable name 'SingleTickerProviderStateMixin' isn't a lowerCamelCase identifier - lib\features\auth\login_screen.dart:449:10 - non_constant_identifier_names
+  error - Methods must have an explicit list of parameters - lib\features\auth\login_screen.dart:449:10 - missing_method_parameters
+   info - The local variable '_driftCtrl' starts with an underscore - lib\features\auth\login_screen.dart:450:28 - no_leading_underscores_for_local_identifiers
+warning - The declaration 'initState' isn't referenced - lib\features\auth\login_screen.dart:453:8 - unused_element
+warning - The declaration 'dispose' isn't referenced - lib\features\auth\login_screen.dart:462:8 - unused_element
+warning - The declaration 'build' isn't referenced - lib\features\auth\login_screen.dart:468:10 - unused_element
+  error - The name '_LoginStraightClipper' isn't a class - lib\features\auth\login_screen.dart:480:30 - creation_with_non_type
+  error - The name '_Orb' isn't a class - lib\features\auth\login_screen.dart:499:34 - creation_with_non_type
+  error - The name '_Orb' isn't a class - lib\features\auth\login_screen.dart:507:34 - creation_with_non_type
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\auth\login_screen.dart:556:42 - ambiguous_extension_member_access
+  error - Classes can't be declared inside other classes - lib\features\auth\login_screen.dart:607:1 - class_in_class
+  error - Expected a class member - lib\features\auth\login_screen.dart:607:12 - expected_class_member
+   info - The variable name 'StatelessWidget' isn't a lowerCamelCase identifier - lib\features\auth\login_screen.dart:607:20 - non_constant_identifier_names
+  error - Methods must have an explicit list of parameters - lib\features\auth\login_screen.dart:607:20 - missing_method_parameters
+  error - The name '_Orb' isn't a class - lib\features\auth\login_screen.dart:611:9 - creation_with_non_type
+   info - 'required' is deprecated and shouldn't be used. In Dart 2.12 and later, use the built-in `required` keyword to mark a named parameter as required - lib\features\auth\login_screen.dart:611:15 - deprecated_member_use
+  error - Expected to find ',' - lib\features\auth\login_screen.dart:611:24 - expected_token
+  error - The getter 'size' isn't defined for the type '_LoginScreenState' - lib\features\auth\login_screen.dart:611:29 - undefined_getter
+   info - 'required' is deprecated and shouldn't be used. In Dart 2.12 and later, use the built-in `required` keyword to mark a named parameter as required - lib\features\auth\login_screen.dart:611:35 - deprecated_member_use
+  error - Expected to find ',' - lib\features\auth\login_screen.dart:611:44 - expected_token
+  error - The getter 'color' isn't defined for the type '_LoginScreenState' - lib\features\auth\login_screen.dart:611:49 - undefined_getter
+warning - The declaration 'build' isn't referenced - lib\features\auth\login_screen.dart:614:10 - unused_element
+  error - The final variable 'size' can't be read because it's potentially unassigned at this point - lib\features\auth\login_screen.dart:616:14 - read_potentially_unassigned_final
+  error - The final variable 'size' can't be read because it's potentially unassigned at this point - lib\features\auth\login_screen.dart:617:15 - read_potentially_unassigned_final
+  error - The final variable 'color' can't be read because it's potentially unassigned at this point - lib\features\auth\login_screen.dart:618:64 - read_potentially_unassigned_final
+  error - Classes can't be declared inside other classes - lib\features\auth\login_screen.dart:624:1 - class_in_class
+  error - Expected a class member - lib\features\auth\login_screen.dart:624:29 - expected_class_member
+   info - The variable name 'CustomClipper' isn't a lowerCamelCase identifier - lib\features\auth\login_screen.dart:624:37 - non_constant_identifier_names
+  error - Methods must have an explicit list of parameters - lib\features\auth\login_screen.dart:624:37 - missing_method_parameters
+   info - The type parameter name 'Path' matches a visible type name - lib\features\auth\login_screen.dart:624:51 - avoid_types_as_parameter_names
+  error - The name '_LoginStraightClipper' isn't a class - lib\features\auth\login_screen.dart:625:9 - creation_with_non_type
+warning - The declaration 'getClip' isn't referenced - lib\features\auth\login_screen.dart:628:8 - unused_element
+  error - 'Path' isn't a function - lib\features\auth\login_screen.dart:629:18 - invocation_of_non_function
+warning - The declaration 'shouldReclip' isn't referenced - lib\features\auth\login_screen.dart:638:8 - unused_element
+  error - The 'covariant' keyword can only be used for parameters in instance methods or before non-final instance fields - lib\features\auth\login_screen.dart:638:21 - invalid_use_of_covariant
+  error - CustomClipper isn't a type - lib\features\auth\login_screen.dart:638:31 - not_a_type
+  error - Classes can't be declared inside other classes - lib\features\auth\login_screen.dart:641:1 - class_in_class
+  error - Expected a class member - lib\features\auth\login_screen.dart:641:28 - expected_class_member
+   info - The variable name 'StatelessWidget' isn't a lowerCamelCase identifier - lib\features\auth\login_screen.dart:641:36 - non_constant_identifier_names
+  error - Methods must have an explicit list of parameters - lib\features\auth\login_screen.dart:641:36 - missing_method_parameters
+  error - The name 'StatelessWidget' is already defined - lib\features\auth\login_screen.dart:641:36 - duplicate_definition
+  error - The name '_PremiumSignInButton' isn't a class - lib\features\auth\login_screen.dart:645:9 - creation_with_non_type
+   info - 'required' is deprecated and shouldn't be used. In Dart 2.12 and later, use the built-in `required` keyword to mark a named parameter as required - lib\features\auth\login_screen.dart:646:5 - deprecated_member_use
+  error - Expected to find ',' - lib\features\auth\login_screen.dart:646:14 - expected_token
+  error - The getter 'isLoading' isn't defined for the type '_LoginScreenState' - lib\features\auth\login_screen.dart:646:19 - undefined_getter
+   info - 'required' is deprecated and shouldn't be used. In Dart 2.12 and later, use the built-in `required` keyword to mark a named parameter as required - lib\features\auth\login_screen.dart:647:5 - deprecated_member_use
+  error - Expected to find ',' - lib\features\auth\login_screen.dart:647:14 - expected_token
+  error - The getter 'onPressed' isn't defined for the type '_LoginScreenState' - lib\features\auth\login_screen.dart:647:19 - undefined_getter
+warning - The declaration 'build' isn't referenced - lib\features\auth\login_screen.dart:651:10 - unused_element
+  error - The final variable 'isLoading' can't be read because it's potentially unassigned at this point - lib\features\auth\login_screen.dart:655:16 - read_potentially_unassigned_final
+  error - The final variable 'onPressed' can't be read because it's potentially unassigned at this point - lib\features\auth\login_screen.dart:655:35 - read_potentially_unassigned_final
+  error - The final variable 'isLoading' can't be read because it's potentially unassigned at this point - lib\features\auth\login_screen.dart:664:23 - read_potentially_unassigned_final
+  error - The final variable 'isLoading' can't be read because it's potentially unassigned at this point - lib\features\auth\login_screen.dart:673:20 - read_potentially_unassigned_final
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\auth\login_screen.dart:683:31 - ambiguous_extension_member_access
+  error - Classes can't be declared inside other classes - lib\features\auth\login_screen.dart:700:1 - class_in_class
+  error - Expected a class member - lib\features\auth\login_screen.dart:700:17 - expected_class_member
+   info - The variable name 'StatelessWidget' isn't a lowerCamelCase identifier - lib\features\auth\login_screen.dart:700:25 - non_constant_identifier_names
+  error - Methods must have an explicit list of parameters - lib\features\auth\login_screen.dart:700:25 - missing_method_parameters
+  error - The name 'StatelessWidget' is already defined - lib\features\auth\login_screen.dart:700:25 - duplicate_definition
+  error - The name '_LangTile' isn't a class - lib\features\auth\login_screen.dart:705:9 - creation_with_non_type
+   info - 'required' is deprecated and shouldn't be used. In Dart 2.12 and later, use the built-in `required` keyword to mark a named parameter as required - lib\features\auth\login_screen.dart:706:5 - deprecated_member_use
+  error - Expected to find ',' - lib\features\auth\login_screen.dart:706:14 - expected_token
+  error - The getter 'flag' isn't defined for the type '_LoginScreenState' - lib\features\auth\login_screen.dart:706:19 - undefined_getter
+   info - 'required' is deprecated and shouldn't be used. In Dart 2.12 and later, use the built-in `required` keyword to mark a named parameter as required - lib\features\auth\login_screen.dart:707:5 - deprecated_member_use
+  error - Expected to find ',' - lib\features\auth\login_screen.dart:707:14 - expected_token
+  error - The getter 'label' isn't defined for the type '_LoginScreenState' - lib\features\auth\login_screen.dart:707:19 - undefined_getter
+   info - 'required' is deprecated and shouldn't be used. In Dart 2.12 and later, use the built-in `required` keyword to mark a named parameter as required - lib\features\auth\login_screen.dart:708:5 - deprecated_member_use
+  error - Expected to find ',' - lib\features\auth\login_screen.dart:708:14 - expected_token
+  error - The getter 'locale' isn't defined for the type '_LoginScreenState' - lib\features\auth\login_screen.dart:708:19 - undefined_getter
+warning - The declaration 'build' isn't referenced - lib\features\auth\login_screen.dart:712:10 - unused_element
+  error - The final variable 'locale' can't be read because it's potentially unassigned at this point - lib\features\auth\login_screen.dart:714:46 - read_potentially_unassigned_final
+  error - The final variable 'locale' can't be read because it's potentially unassigned at this point - lib\features\auth\login_screen.dart:725:44 - read_potentially_unassigned_final
+  error - The final variable 'flag' can't be read because it's potentially unassigned at this point - lib\features\auth\login_screen.dart:733:22 - read_potentially_unassigned_final
+  error - The final variable 'label' can't be read because it's potentially unassigned at this point - lib\features\auth\login_screen.dart:737:21 - read_potentially_unassigned_final
+  error - Expected to find '}' - lib\features\auth\login_screen.dart:760:1 - expected_token
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\home\home_screen.dart:1466:58 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\home\home_screen.dart:1477:39 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\home\home_screen.dart:1490:56 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\home\home_screen.dart:1494:46 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\home\home_screen.dart:1495:55 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\home\home_screen.dart:1554:37 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\home\home_screen.dart:1636:31 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\home\home_screen.dart:1637:37 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\home\home_screen.dart:1638:29 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\home\home_screen.dart:1639:30 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\home\home_screen.dart:1897:38 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\home\home_screen.dart:1910:29 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\home\home_screen.dart:2065:44 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\home\home_screen.dart:2066:45 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\home\home_screen.dart:2067:31 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\home\home_screen.dart:2068:39 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\home\home_screen.dart:2244:57 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\home\home_screen.dart:2261:57 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\home\home_screen.dart:2262:58 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\home\home_screen.dart:2368:43 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\home\home_screen.dart:2377:41 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\home\home_screen.dart:2434:44 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\home\home_screen.dart:2744:44 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\home\home_screen.dart:2754:43 - ambiguous_extension_member_access
+warning - Unused import: 'package:easy_localization/easy_localization.dart' - lib\features\students\students_screen.dart:1:8 - unused_import
+warning - Unused import: '../../core/controllers/locale_controller.dart' - lib\features\students\students_screen.dart:8:8 - unused_import
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\students\students_screen.dart:186:23 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\students\students_screen.dart:213:27 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\students\students_screen.dart:254:38 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\students\students_screen.dart:262:40 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\students\students_screen.dart:270:39 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\students\students_screen.dart:284:46 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\students\students_screen.dart:297:45 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\students\students_screen.dart:349:45 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\students\students_screen.dart:441:52 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\students\students_screen.dart:442:51 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\students\students_screen.dart:646:51 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\students\students_screen.dart:722:65 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\students\students_screen.dart:1015:51 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\students\students_screen.dart:1015:72 - ambiguous_extension_member_access
+warning - Unused import: 'package:easy_localization/easy_localization.dart' - lib\features\tracking\tracking_screen.dart:1:8 - unused_import
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\tracking\tracking_screen.dart:88:44 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\tracking\tracking_screen.dart:89:45 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\tracking\tracking_screen.dart:90:31 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\tracking\tracking_screen.dart:91:39 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\tracking\tracking_screen.dart:120:34 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\tracking\tracking_screen.dart:190:47 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\tracking\tracking_screen.dart:191:48 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\tracking\tracking_screen.dart:213:68 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\tracking\tracking_screen.dart:252:52 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\tracking\tracking_screen.dart:252:72 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\tracking\tracking_screen.dart:282:49 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\tracking\tracking_screen.dart:298:45 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\tracking\tracking_screen.dart:381:42 - ambiguous_extension_member_access
+  error - A member named 'tr' is defined in 'extension StringTranslateExtension on String' and 'extension Trans on String', and neither is more specific - lib\features\tracking\tracking_screen.dart:381:66 - ambiguous_extension_member_access
+
+flutter : 171 issues found. (ran in 2.9s)
+At line:1 char:1
++ flutter analyze 2>&1 | Out-File -FilePath "analyze_output2.txt" -Enco ...
++ ~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (171 issues found. (ran in 2.9s):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 

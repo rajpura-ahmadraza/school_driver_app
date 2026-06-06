@@ -1,0 +1,57 @@
+name: school_driver_app
+description: School Management System - Driver Mobile App
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+  flutter: ">=3.10.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # HTTP & Networking
+  dio: ^5.9.2
+  intl: ^0.20.2
+
+  # State Management
+  get: ^4.7.2
+
+  # Navigation
+  go_router: ^17.2.3
+
+  # Secure Storage (JWT)
+  flutter_secure_storage: ^10.2.0
+
+  # GPS & Location
+  geolocator: ^14.0.2
+  permission_handler: ^12.0.1
+
+  # Internationalization (English / Hindi / Gujarati)
+  easy_localization: ^3.0.8
+
+  # UI
+  shimmer: ^3.0.0
+  flutter_animate: ^4.5.2
+
+  # Utils
+  shared_preferences: ^2.5.5
+  connectivity_plus: ^7.1.1
+
+  cupertino_icons: ^1.0.9
+  flutter_local_notifications: ^21.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/translations/
+    - assets/images/
