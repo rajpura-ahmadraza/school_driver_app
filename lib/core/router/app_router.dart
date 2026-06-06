@@ -7,6 +7,7 @@ import '../../features/auth/login_screen.dart';
 import '../../features/home/home_screen.dart';
 import '../../features/tracking/tracking_screen.dart';
 import '../../features/students/students_screen.dart';
+import '../../features/home/notifications_screen.dart';
 import '../controllers/auth_controller.dart';
 import '../controllers/locale_controller.dart';
 import '../splash/splash_screen.dart';
@@ -19,6 +20,7 @@ class AppRoutes {
   static const home = '/home';
   static const tracking = '/tracking';
   static const students = '/students';
+  static const notifications = '/notifications';
 }
 
 final rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -69,7 +71,50 @@ GoRouter buildAppRouter() {
       ),
       GoRoute(
         path: AppRoutes.login,
-        builder: (_, __) => const LoginScreen(),
+        pageBuilder: (context, state) {
+          return CustomTransitionPage(
+            key: state.pageKey,
+            child: const LoginScreen(),
+            transitionDuration: const Duration(milliseconds: 380),
+            reverseTransitionDuration: const Duration(milliseconds: 300),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              if (animation.status == AnimationStatus.reverse) {
+                final slideOut = Tween<Offset>(
+                  begin: const Offset(1.0, 0.0),
+                  end: Offset.zero,
+                ).chain(CurveTween(curve: Curves.easeInCubic));
+                return SlideTransition(
+                  position: animation.drive(slideOut),
+                  child: child,
+                );
+              } else {
+                final slideIn = Tween<Offset>(
+                  begin: const Offset(1.0, 0.0),
+                  end: Offset.zero,
+                ).chain(CurveTween(curve: Curves.easeOutCubic));
+                final scaleIn = Tween<double>(
+                  begin: 0.96,
+                  end: 1.0,
+                ).chain(CurveTween(curve: Curves.easeOutCubic));
+                final fadeIn = Tween<double>(
+                  begin: 0.0,
+                  end: 1.0,
+                ).chain(CurveTween(curve: Curves.easeIn));
+                return FadeTransition(
+                  opacity: animation.drive(fadeIn),
+                  child: ScaleTransition(
+                    scale: animation.drive(scaleIn),
+                    child: SlideTransition(
+                      position: animation.drive(slideIn),
+                      child: child,
+                    ),
+                  ),
+                );
+              }
+            },
+          );
+        },
       ),
       GoRoute(
         path: AppRoutes.forgotPassword,
@@ -82,6 +127,10 @@ GoRouter buildAppRouter() {
       GoRoute(
         path: AppRoutes.tracking,
         builder: (_, __) => const TrackingScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.notifications,
+        builder: (_, __) => const NotificationsScreen(),
       ),
       GoRoute(
         path: AppRoutes.students,

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart' hide Trans;
 import 'dart:math' as math;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/api/api_client.dart';
 import '../../core/controllers/auth_controller.dart';
 import '../../core/utils/student_image_url.dart';
@@ -75,6 +76,23 @@ class _StudentsScreenState extends State<StudentsScreen>
 
   late final _StudentsController _ctrl;
 
+  Future<void> _loadSavedAttendance() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+      final key = 'attendance_${widget.routeId}_$today';
+      final savedIds = prefs.getStringList(key);
+      if (savedIds != null) {
+        setState(() {
+          _markedAbsent.clear();
+          _markedAbsent.addAll(savedIds.map(int.parse));
+        });
+      }
+    } catch (e) {
+      // Ignore
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -93,6 +111,7 @@ class _StudentsScreenState extends State<StudentsScreen>
     ).animate(
       CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeOutCubic),
     );
+    _loadSavedAttendance();
   }
 
   @override
@@ -132,9 +151,12 @@ class _StudentsScreenState extends State<StudentsScreen>
                   child: Obx(() {
                     final ctrl = Get.find<_StudentsController>(
                         tag: widget.routeId.toString());
-                    if (ctrl.isLoading.value) return _buildLoading();
-                    if (ctrl.error.value != null)
+                    if (ctrl.isLoading.value) {
+                      return _buildLoading();
+                    }
+                    if (ctrl.error.value != null) {
                       return _buildError(ctrl.error.value!);
+                    }
                     final filtered = ctrl.students.where((student) {
                       final name =
                           (student['name'] as String? ?? '').toLowerCase();
@@ -468,8 +490,20 @@ class _StudentsScreenState extends State<StudentsScreen>
     );
   }
 
-  void _saveAttendance() {
+  Future<void> _saveAttendance() async {
     setState(() => _saved = true);
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+      final key = 'attendance_${widget.routeId}_$today';
+      final idsList = _markedAbsent.map((id) => id.toString()).toList();
+      await prefs.setStringList(key, idsList);
+    } catch (e) {
+      // Ignore
+    }
+
+    if (!mounted) return;
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

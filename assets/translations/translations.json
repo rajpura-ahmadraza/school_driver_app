@@ -96,7 +96,8 @@
     "password_sent_title": "Password Sent",
     "password_sent_desc": "A new temporary password has been successfully sent to your email.",
     "debug_password_alert": "Debug Password (Local Dev Only):",
-    "copy_success": "Copied to clipboard!"
+    "copy_success": "Copied to clipboard!",
+    "notifications": "Notifications"
   },
   "hi": {
     "app_name": "स्कूल ड्राइवर",
@@ -195,7 +196,8 @@
     "password_sent_title": "पासवर्ड भेजा गया",
     "password_sent_desc": "आपके ईमेल पर सफलतापूर्वक एक नया अस्थायी पासवर्ड भेज दिया गया है।",
     "debug_password_alert": "डीबग पासवर्ड (केवल स्थानीय देव):",
-    "copy_success": "क्लिपबोर्ड पर कॉपी किया गया!"
+    "copy_success": "क्लिपबोर्ड पर कॉपी किया गया!",
+    "notifications": "सूचनाएं"
   },
   "gu": {
     "app_name": "શાળા ચાલક",
@@ -294,6 +296,7 @@
     "password_sent_title": "પાસવર્ડ મોકલ્યો",
     "password_sent_desc": "તમારા ઇમેઇલ પર એક નવો કામચલાઉ પાસવર્ડ સફળતાપૂર્વક મોકલવામાં આવ્યો છે.",
     "debug_password_alert": "ડીબગ પાસવર્ડ (ફક્ત લોકલ ડેવ):",
-    "copy_success": "ક્લિપબોર્ડ પર કોપી કરેલ!"
+    "copy_success": "ક્લિપબોર્ડ પર કોપી કરેલ!",
+    "notifications": "સૂચનાઓ"
   }
 }

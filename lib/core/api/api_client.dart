@@ -16,9 +16,7 @@ const String _tokenKey = 'driver_jwt_token';
 
 class ApiClient {
   late final Dio _dio;
-  static const _storage = FlutterSecureStorage(
-    aOptions: AndroidOptions(encryptedSharedPreferences: true),
-  );
+  static const _storage = FlutterSecureStorage();
 
   ApiClient() {
     _dio = Dio(
@@ -73,10 +71,10 @@ class ApiClient {
     if (e.type == DioExceptionType.connectionTimeout ||
         e.type == DioExceptionType.receiveTimeout ||
         e.type == DioExceptionType.sendTimeout) {
-      return ApiException('Connection timed out. Check your internet.', 408);
+      return const ApiException('Connection timed out. Check your internet.', 408);
     }
     if (e.type == DioExceptionType.connectionError) {
-      return ApiException('No internet connection.', 0);
+      return const ApiException('No internet connection.', 0);
     }
     final status = e.response?.statusCode ?? 0;
     final msg =

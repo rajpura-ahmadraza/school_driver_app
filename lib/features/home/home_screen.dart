@@ -430,6 +430,50 @@ class _HomeHeaderState extends State<_HomeHeader>
                                 ],
                               ),
                             ),
+                            const SizedBox(width: 14),
+                            Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () =>
+                                    context.push(AppRoutes.notifications),
+                                borderRadius: BorderRadius.circular(40),
+                                child: Container(
+                                  width: 42,
+                                  height: 42,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(40),
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: [
+                                        Colors.white.withValues(alpha: 0.3),
+                                        Colors.white.withValues(alpha: 0.1),
+                                      ],
+                                    ),
+                                    border: Border.all(
+                                      color:
+                                          Colors.white.withValues(alpha: 0.45),
+                                      width: 1.5,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color:
+                                            Colors.black.withValues(alpha: 0.2),
+                                        blurRadius: 24,
+                                        offset: const Offset(0, 10),
+                                      ),
+                                    ],
+                                  ),
+                                  child: const Center(
+                                    child: Icon(
+                                      Icons.notifications_rounded,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                         if (hasContactInfo) ...[

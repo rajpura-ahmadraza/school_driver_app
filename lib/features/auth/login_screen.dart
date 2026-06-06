@@ -47,7 +47,7 @@ class _LoginScreenState extends State<LoginScreen>
     )..forward();
     _fadeAnim = CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeOutCubic);
     _slideAnim = Tween<Offset>(
-      begin: const Offset(0, 0.08),
+      begin: Offset.zero,
       end: Offset.zero,
     ).animate(
       CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeOutCubic),

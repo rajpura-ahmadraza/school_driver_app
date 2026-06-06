@@ -19,7 +19,7 @@ class AppTheme {
           backgroundColor: Colors.white,
           foregroundColor: Color(0xFF111827),
           surfaceTintColor: Colors.transparent,
-          titleTextStyle: const TextStyle(
+          titleTextStyle: TextStyle(
             fontSize: 17,
             fontWeight: FontWeight.w600,
             color: Color(0xFF111827),
@@ -94,7 +94,7 @@ class AppTheme {
           backgroundColor: Color(0xFF1E293B),
           foregroundColor: Colors.white,
           surfaceTintColor: Colors.transparent,
-          titleTextStyle: const TextStyle(
+          titleTextStyle: TextStyle(
             fontSize: 17,
             fontWeight: FontWeight.w600,
             color: Colors.white,

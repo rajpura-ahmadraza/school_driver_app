@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'dart:math' show sin, cos, sqrt, atan2, pi;
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
 import 'package:permission_handler/permission_handler.dart';
 import '../api/api_client.dart';
 
@@ -39,8 +40,8 @@ Future<void> _showTrackingStartedNotification() async {
   await _initNotifications();
   await _flutterLocalNotificationsPlugin.show(
     id: 0,
-    title: 'tracking_started_notification_title'.tr,
-    body: 'tracking_started_notification_body'.tr,
+    title: 'tracking_started_notification_title'.tr(),
+    body: 'tracking_started_notification_body'.tr(),
     notificationDetails: _trackingNotificationDetails,
   );
 }
@@ -49,8 +50,8 @@ Future<void> _showTrackingStoppedNotification() async {
   await _initNotifications();
   await _flutterLocalNotificationsPlugin.show(
     id: 1,
-    title: 'tracking_stopped_notification_title'.tr,
-    body: 'tracking_stopped_notification_body'.tr,
+    title: 'tracking_stopped_notification_title'.tr(),
+    body: 'tracking_stopped_notification_body'.tr(),
     notificationDetails: _trackingNotificationDetails,
   );
 }
