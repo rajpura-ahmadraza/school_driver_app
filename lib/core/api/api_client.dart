@@ -34,8 +34,8 @@ class ApiClient {
     _dio.interceptors.addAll([
       _AuthInterceptor(_dio, _storage),
       LogInterceptor(
-        requestBody: false,
-        responseBody: false,
+        requestBody: true,
+        responseBody: true,
         error: true,
       ),
     ]);
@@ -71,14 +71,45 @@ class ApiClient {
     if (e.type == DioExceptionType.connectionTimeout ||
         e.type == DioExceptionType.receiveTimeout ||
         e.type == DioExceptionType.sendTimeout) {
-      return const ApiException('Connection timed out. Check your internet.', 408);
+      return const ApiException('no_internet', 408);
     }
     if (e.type == DioExceptionType.connectionError) {
-      return const ApiException('No internet connection.', 0);
+      return const ApiException('no_internet', 0);
     }
     final status = e.response?.statusCode ?? 0;
-    final msg =
-        e.response?.data?['message'] as String? ?? e.message ?? 'Unknown error';
+    
+    String msg = '';
+    final data = e.response?.data;
+    if (data is Map) {
+      if (data['message'] != null && data['message'].toString().isNotEmpty) {
+        msg = data['message'].toString();
+      } else if (data['error'] != null && data['error'].toString().isNotEmpty) {
+        msg = data['error'].toString();
+      } else if (data['errors'] is Map) {
+        final errorsMap = data['errors'] as Map;
+        if (errorsMap.isNotEmpty) {
+          final firstVal = errorsMap.values.first;
+          if (firstVal is List && firstVal.isNotEmpty) {
+            msg = firstVal.first.toString();
+          } else if (firstVal != null) {
+            msg = firstVal.toString();
+          }
+        }
+      }
+    } else if (data is String && data.isNotEmpty) {
+      msg = data;
+    }
+
+    if (msg.isEmpty) {
+      if (status == 401 || status == 422) {
+        msg = 'invalid_credentials';
+      } else if (status >= 500) {
+        msg = 'server_error';
+      } else {
+        msg = 'error';
+      }
+    }
+
     return ApiException(msg, status);
   }
 

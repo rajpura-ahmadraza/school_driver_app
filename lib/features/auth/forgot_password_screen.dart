@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart' hide Trans;
 import 'package:go_router/go_router.dart';
 import '../../core/controllers/auth_controller.dart';
@@ -236,6 +237,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
             keyboardType: TextInputType.emailAddress,
             textInputAction: TextInputAction.done,
             onFieldSubmitted: (_) => _submit(),
+            inputFormatters: [
+              FilteringTextInputFormatter.deny(
+                RegExp(r'\s'),
+              ),
+            ],
             style: const TextStyle(
               fontFamily: 'Poppins',
               fontWeight: FontWeight.w500,
@@ -248,7 +254,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
               if (v == null || v.trim().isEmpty) {
                 return StringTranslateExtension('email_required').tr();
               }
-              if (!v.contains('@')) {
+              final emailRegex = RegExp(
+                r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+              );
+              if (!emailRegex.hasMatch(v.trim())) {
                 return 'invalid_email'.tr();
               }
               return null;

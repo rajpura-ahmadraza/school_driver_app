@@ -195,6 +195,7 @@ class AuthController extends GetxController {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('persistent_driver_token');
     await prefs.remove('persistent_driver_user');
+    await prefs.remove(_lastEmailKey);
 
     token.value = null;
     user.value = null;

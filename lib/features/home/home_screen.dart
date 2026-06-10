@@ -912,7 +912,7 @@ class _StatusCardState extends State<_StatusCard> {
                                       : 'tracking_stopped'.tr(),
                                   style: TextStyle(
                                     fontFamily: 'Poppins',
-                                    fontSize: 18,
+                                    fontSize: 16,
                                     fontWeight: FontWeight.w800,
                                     height: 1.2,
                                     color: isTracking

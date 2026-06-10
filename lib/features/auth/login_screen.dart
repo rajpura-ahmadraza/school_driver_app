@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart' hide Trans;
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -29,8 +30,8 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen>
     with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
-  final _emailCtrl = TextEditingController(text: "rajpuraa3@gmail.com");
-  final _passwordCtrl = TextEditingController(text: "12345678");
+  final _emailCtrl = TextEditingController();
+  final _passwordCtrl = TextEditingController();
   bool _obscure = true;
 
   late AnimationController _fadeCtrl;
@@ -292,6 +293,11 @@ class _LoginScreenState extends State<LoginScreen>
                                       controller: _emailCtrl,
                                       keyboardType: TextInputType.emailAddress,
                                       textInputAction: TextInputAction.next,
+                                      inputFormatters: [
+                                        FilteringTextInputFormatter.deny(
+                                          RegExp(r'\s'),
+                                        ),
+                                      ],
                                       style: const TextStyle(
                                         fontFamily: 'Poppins',
                                         fontWeight: FontWeight.w500,
@@ -302,10 +308,13 @@ class _LoginScreenState extends State<LoginScreen>
                                       ),
                                       validator: (v) {
                                         if (v == null || v.trim().isEmpty) {
-                                          return 'Email is required';
+                                          return 'email_required'.tr();
                                         }
-                                        if (!v.contains('@')) {
-                                          return 'Enter a valid email';
+                                        final emailRegex = RegExp(
+                                          r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                                        );
+                                        if (!emailRegex.hasMatch(v.trim())) {
+                                          return 'invalid_email'.tr();
                                         }
                                         return null;
                                       },
