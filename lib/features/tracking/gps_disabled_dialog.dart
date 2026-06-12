@@ -1,8 +1,8 @@
 import 'dart:async';
 
-
-
 import 'package:easy_localization/easy_localization.dart';
+
+import 'package:flutter/foundation.dart';
 
 import 'package:flutter/material.dart';
 
@@ -100,17 +100,21 @@ class _GpsDisabledDialogState extends State<_GpsDisabledDialog>
 
     WidgetsBinding.instance.addObserver(this);
 
-    _gpsStatusSubscription =
+    if (!kIsWeb) {
 
-        Geolocator.getServiceStatusStream().listen((status) {
+      _gpsStatusSubscription =
 
-      if (status == ServiceStatus.enabled) {
+          Geolocator.getServiceStatusStream().listen((status) {
 
-        _closeIfEnabled();
+        if (status == ServiceStatus.enabled) {
 
-      }
+          _closeIfEnabled();
 
-    });
+        }
+
+      });
+
+    }
 
   }
 

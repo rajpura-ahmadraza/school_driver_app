@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -6,7 +7,9 @@ import 'dart:math' as math;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/api/api_client.dart';
 import '../../core/controllers/auth_controller.dart';
+import '../../core/controllers/gps_controller.dart';
 import '../../core/utils/student_image_url.dart';
+import '../../core/widgets/top_toast.dart';
 
 // ── UI Palette ──
 abstract final class _StudentsUi {
@@ -67,6 +70,8 @@ class StudentsScreen extends StatefulWidget {
 class _StudentsScreenState extends State<StudentsScreen>
     with SingleTickerProviderStateMixin {
   final Set<int> _markedAbsent = {};
+  final Set<int> _markedPresent = {};
+  bool _hasSavedAttendanceToday = false;
   bool _saved = false;
   String _searchQuery = '';
 
@@ -76,16 +81,34 @@ class _StudentsScreenState extends State<StudentsScreen>
 
   late final _StudentsController _ctrl;
 
+  bool? getStudentStatus(int id) {
+    if (_markedAbsent.contains(id)) return false;
+    if (_markedPresent.contains(id)) return true;
+    if (_hasSavedAttendanceToday) return true;
+    return null;
+  }
+
+  StreamSubscription<bool>? _trackingSubscription;
+
   Future<void> _loadSavedAttendance() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
       final key = 'attendance_${widget.routeId}_$today';
+      final savedKey = 'attendance_saved_${widget.routeId}_$today';
       final savedIds = prefs.getStringList(key);
-      if (savedIds != null) {
+      final wasSaved = prefs.getBool(savedKey) ?? false;
+      if (wasSaved && savedIds != null) {
         setState(() {
+          _hasSavedAttendanceToday = true;
           _markedAbsent.clear();
           _markedAbsent.addAll(savedIds.map(int.parse));
+        });
+      } else {
+        setState(() {
+          _hasSavedAttendanceToday = false;
+          _markedAbsent.clear();
+          _markedPresent.clear();
         });
       }
     } catch (e) {
@@ -112,10 +135,19 @@ class _StudentsScreenState extends State<StudentsScreen>
       CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeOutCubic),
     );
     _loadSavedAttendance();
+
+    // Listen to GPS tracking status changes to clear attendance if tracking is stopped
+    final gps = Get.find<GpsController>();
+    _trackingSubscription = gps.isTracking.listen((isTracking) {
+      if (!isTracking) {
+        _loadSavedAttendance();
+      }
+    });
   }
 
   @override
   void dispose() {
+    _trackingSubscription?.cancel();
     Get.delete<_StudentsController>(tag: widget.routeId.toString());
     _fadeCtrl.dispose();
     super.dispose();
@@ -123,6 +155,7 @@ class _StudentsScreenState extends State<StudentsScreen>
 
   Future<void> _refreshStudents() async {
     await _ctrl.load();
+    await _loadSavedAttendance();
   }
 
   @override
@@ -256,8 +289,9 @@ class _StudentsScreenState extends State<StudentsScreen>
 
   Widget _buildContent(List<dynamic> students) {
     final absentCount =
-        students.where((s) => _markedAbsent.contains(s['id'] as int)).length;
-    final presentCount = students.length - absentCount;
+        students.where((s) => getStudentStatus(s['id'] as int) == false).length;
+    final presentCount =
+        students.where((s) => getStudentStatus(s['id'] as int) == true).length;
 
     return Column(
       children: [
@@ -305,8 +339,9 @@ class _StudentsScreenState extends State<StudentsScreen>
                       child: _BulkBtn(
                         label: 'all_present'.tr(),
                         onTap: () => setState(() {
+                          _markedAbsent.clear();
                           for (final s in students) {
-                            _markedAbsent.remove(s['id'] as int);
+                            _markedPresent.add(s['id'] as int);
                           }
                         }),
                         color: const Color(0xFF22C55E),
@@ -318,6 +353,7 @@ class _StudentsScreenState extends State<StudentsScreen>
                       child: _BulkBtn(
                         label: 'all_absent'.tr(),
                         onTap: () => setState(() {
+                          _markedPresent.clear();
                           for (final s in students) {
                             _markedAbsent.add(s['id'] as int);
                           }
@@ -391,16 +427,26 @@ class _StudentsScreenState extends State<StudentsScreen>
                     itemBuilder: (ctx, i) {
                       final s = students[i];
                       final id = s['id'] as int;
-                      final isAbsent = _markedAbsent.contains(id);
+                      final status = getStudentStatus(id);
                       return _StudentCard(
                         student: s,
-                        isAbsent: isAbsent,
+                        status: status,
                         onToggle: () => setState(() {
-                          if (isAbsent) {
+                          if (status == null || status == false) {
                             _markedAbsent.remove(id);
+                            _markedPresent.add(id);
                           } else {
+                            _markedPresent.remove(id);
                             _markedAbsent.add(id);
                           }
+                        }),
+                        onMarkPresent: () => setState(() {
+                          _markedAbsent.remove(id);
+                          _markedPresent.add(id);
+                        }),
+                        onMarkAbsent: () => setState(() {
+                          _markedPresent.remove(id);
+                          _markedAbsent.add(id);
                         }),
                       );
                     },
@@ -497,42 +543,41 @@ class _StudentsScreenState extends State<StudentsScreen>
       final prefs = await SharedPreferences.getInstance();
       final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
       final key = 'attendance_${widget.routeId}_$today';
+      final savedKey = 'attendance_saved_${widget.routeId}_$today';
       final idsList = _markedAbsent.map((id) => id.toString()).toList();
       await prefs.setStringList(key, idsList);
+      await prefs.setBool(savedKey, true);
+      setState(() {
+        _hasSavedAttendanceToday = true;
+      });
     } catch (e) {
       // Ignore
     }
 
     if (!mounted) return;
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(
-              Icons.check_circle_rounded,
-              color: Colors.white,
-              size: 22,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'Attendance saved. ${_markedAbsent.length} student(s) marked absent.',
-                style: const TextStyle(
-                  fontFamily: 'Poppins',
-                  fontWeight: FontWeight.w600,
-                  fontSize: 13,
-                  color: Colors.white,
-                ),
+    TopToast.show(
+      context,
+      backgroundColor: _StudentsUi.teal,
+      content: Row(
+        children: [
+          const Icon(
+            Icons.check_circle_rounded,
+            color: Colors.white,
+            size: 22,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              'Attendance saved. ${_markedAbsent.length} student(s) marked absent.',
+              style: const TextStyle(
+                fontFamily: 'Poppins',
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+                color: Colors.white,
               ),
             ),
-          ],
-        ),
-        backgroundColor: _StudentsUi.teal,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        margin: const EdgeInsets.all(16),
-        duration: const Duration(seconds: 3),
+          ),
+        ],
       ),
     );
     Future.delayed(const Duration(seconds: 3), () {
@@ -820,12 +865,12 @@ class _StudentsOrb extends StatelessWidget {
 // ── Student Avatar ──
 class _StudentAvatar extends StatelessWidget {
   final Map<String, dynamic> student;
-  final bool isAbsent;
+  final bool? status;
   final String initial;
 
   const _StudentAvatar({
     required this.student,
-    required this.isAbsent,
+    required this.status,
     required this.initial,
   });
 
@@ -836,9 +881,11 @@ class _StudentAvatar extends StatelessWidget {
     final imageUrl = StudentImageUrl.fromStudent(student);
     final token = Get.find<AuthController>().token.value;
 
-    final borderColor = isAbsent
-        ? const Color(0xFFEF4444).withValues(alpha: 0.25)
-        : const Color(0xFF22C55E).withValues(alpha: 0.2);
+    final borderColor = status == null
+        ? const Color(0xFFCBD5E1)
+        : (status == false
+            ? const Color(0xFFEF4444).withValues(alpha: 0.25)
+            : const Color(0xFF22C55E).withValues(alpha: 0.2));
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 250),
@@ -851,15 +898,20 @@ class _StudentAvatar extends StatelessWidget {
             ? LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: isAbsent
+                colors: status == null
                     ? [
-                        const Color(0xFFFEE2E2),
-                        const Color(0xFFFCA5A5),
+                        const Color(0xFFF1F5F9),
+                        const Color(0xFFE2E8F0),
                       ]
-                    : [
-                        const Color(0xFFDCFCE7),
-                        const Color(0xFFF0FDF4),
-                      ],
+                    : (status == false
+                        ? [
+                            const Color(0xFFFEE2E2),
+                            const Color(0xFFFCA5A5),
+                          ]
+                        : [
+                            const Color(0xFFDCFCE7),
+                            const Color(0xFFF0FDF4),
+                          ]),
               )
             : null,
       ),
@@ -881,9 +933,11 @@ class _StudentAvatar extends StatelessWidget {
                       height: 20,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: isAbsent
-                            ? const Color(0xFFB91C1C)
-                            : const Color(0xFF22C55E),
+                        color: status == null
+                            ? _StudentsUi.deep
+                            : (status == false
+                                ? const Color(0xFFB91C1C)
+                                : const Color(0xFF22C55E)),
                       ),
                     ),
                   );
@@ -902,7 +956,11 @@ class _StudentAvatar extends StatelessWidget {
           fontFamily: 'Poppins',
           fontWeight: FontWeight.w800,
           fontSize: 16,
-          color: isAbsent ? const Color(0xFFB91C1C) : const Color(0xFF15803D),
+          color: status == null
+              ? _StudentsUi.inkMuted
+              : (status == false
+                  ? const Color(0xFFB91C1C)
+                  : const Color(0xFF15803D)),
         ),
       ),
     );
@@ -912,13 +970,17 @@ class _StudentAvatar extends StatelessWidget {
 // ── Student Card ──
 class _StudentCard extends StatelessWidget {
   final Map<String, dynamic> student;
-  final bool isAbsent;
+  final bool? status;
   final VoidCallback onToggle;
+  final VoidCallback onMarkPresent;
+  final VoidCallback onMarkAbsent;
 
   const _StudentCard({
     required this.student,
-    required this.isAbsent,
+    required this.status,
     required this.onToggle,
+    required this.onMarkPresent,
+    required this.onMarkAbsent,
   });
 
   @override
@@ -935,23 +997,32 @@ class _StudentCard extends StatelessWidget {
     }
     final subtitleText = subtitleParts.join(' · ');
 
+    final isAbsent = status == false;
+    final isUnselected = status == null;
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 250),
       curve: Curves.easeInOut,
       decoration: BoxDecoration(
-        color: isAbsent ? const Color(0xFFFEF2F2) : const Color(0xFFF0FDF4),
+        color: isUnselected
+            ? Colors.white
+            : (isAbsent ? const Color(0xFFFEF2F2) : const Color(0xFFF0FDF4)),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: isAbsent
-              ? const Color(0xFFFCA5A5).withValues(alpha: 0.5)
-              : const Color(0xFF86EFAC).withValues(alpha: 0.4),
+          color: isUnselected
+              ? const Color(0xFFE2E8F0)
+              : (isAbsent
+                  ? const Color(0xFFFCA5A5).withValues(alpha: 0.5)
+                  : const Color(0xFF86EFAC).withValues(alpha: 0.4)),
           width: 1.2,
         ),
         boxShadow: [
           BoxShadow(
-            color: isAbsent
-                ? const Color(0xFFEF4444).withValues(alpha: 0.03)
-                : const Color(0xFF22C55E).withValues(alpha: 0.03),
+            color: isUnselected
+                ? Colors.black.withValues(alpha: 0.02)
+                : (isAbsent
+                    ? const Color(0xFFEF4444).withValues(alpha: 0.03)
+                    : const Color(0xFF22C55E).withValues(alpha: 0.03)),
             blurRadius: 16,
             offset: const Offset(0, 6),
           ),
@@ -965,7 +1036,7 @@ class _StudentCard extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: onToggle,
+          onTap: isUnselected ? onMarkPresent : onToggle,
           borderRadius: BorderRadius.circular(18),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -973,7 +1044,7 @@ class _StudentCard extends StatelessWidget {
               children: [
                 _StudentAvatar(
                   student: student,
-                  isAbsent: isAbsent,
+                  status: status,
                   initial: initial,
                 ),
                 const SizedBox(width: 14),
@@ -1017,48 +1088,138 @@ class _StudentCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                  decoration: BoxDecoration(
-                    color: isAbsent
-                        ? const Color(0xFF22C55E).withValues(alpha: 0.08)
-                        : const Color(0xFFEF4444).withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: isAbsent
-                          ? const Color(0xFF22C55E).withValues(alpha: 0.2)
-                          : const Color(0xFFEF4444).withValues(alpha: 0.25),
-                      width: 1,
-                    ),
-                  ),
-                  child: Row(
+                if (isUnselected)
+                  Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        isAbsent
-                            ? Icons.check_circle_outline_rounded
-                            : Icons.person_off_rounded,
-                        size: 13,
-                        color: isAbsent
-                            ? const Color(0xFF15803D)
-                            : const Color(0xFFB91C1C),
+                      // Present Button
+                      Material(
+                        color: const Color(0xFF22C55E).withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(12),
+                        child: InkWell(
+                          onTap: onMarkPresent,
+                          borderRadius: BorderRadius.circular(12),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: const Color(0xFF22C55E)
+                                    .withValues(alpha: 0.25),
+                                width: 1,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.check_circle_outline_rounded,
+                                  size: 13,
+                                  color: Color(0xFF15803D),
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'present'.tr(),
+                                  style: const TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF15803D),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
-                      const SizedBox(width: 5),
-                      Text(
-                        isAbsent ? 'mark_present'.tr() : 'mark_absent'.tr(),
-                        style: TextStyle(
-                          fontFamily: 'Poppins',
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
+                      const SizedBox(width: 6),
+                      // Absent Button
+                      Material(
+                        color: const Color(0xFFEF4444).withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(12),
+                        child: InkWell(
+                          onTap: onMarkAbsent,
+                          borderRadius: BorderRadius.circular(12),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: const Color(0xFFEF4444)
+                                    .withValues(alpha: 0.25),
+                                width: 1,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.person_off_rounded,
+                                  size: 13,
+                                  color: Color(0xFFB91C1C),
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'absent'.tr(),
+                                  style: const TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFFB91C1C),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                else
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                    decoration: BoxDecoration(
+                      color: isAbsent
+                          ? const Color(0xFF22C55E).withValues(alpha: 0.08)
+                          : const Color(0xFFEF4444).withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: isAbsent
+                            ? const Color(0xFF22C55E).withValues(alpha: 0.2)
+                            : const Color(0xFFEF4444).withValues(alpha: 0.25),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          isAbsent
+                              ? Icons.check_circle_outline_rounded
+                              : Icons.person_off_rounded,
+                          size: 13,
                           color: isAbsent
                               ? const Color(0xFF15803D)
                               : const Color(0xFFB91C1C),
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: 5),
+                        Text(
+                          isAbsent ? 'mark_present'.tr() : 'mark_absent'.tr(),
+                          style: TextStyle(
+                            fontFamily: 'Poppins',
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: isAbsent
+                                ? const Color(0xFF15803D)
+                                : const Color(0xFFB91C1C),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
               ],
             ),
           ),

@@ -9,6 +9,7 @@ import '../../core/controllers/auth_controller.dart';
 import '../../core/controllers/locale_controller.dart';
 import '../../core/router/app_router.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/top_toast.dart';
 
 /// Login UI palette — visual only.
 abstract final class _LoginUi {
@@ -83,32 +84,57 @@ class _LoginScreenState extends State<LoginScreen>
 
     if (error != null && mounted) {
       _showError(error.tr());
-    }
-  }
-
-  void _showError(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
+    } else if (mounted) {
+      TopToast.show(
+        context,
+        backgroundColor: const Color(0xFF22C55E),
         content: Row(
           children: [
             const Icon(
-              Icons.error_outline_rounded,
+              Icons.check_circle_rounded,
               color: Colors.white,
               size: 20,
             ),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                msg,
-                style: const TextStyle(fontFamily: 'Poppins'),
+                'login_success'.tr(),
+                style: const TextStyle(
+                  fontFamily: 'Poppins',
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ],
         ),
-        backgroundColor: AppTheme.danger,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        margin: const EdgeInsets.all(16),
+      );
+    }
+  }
+
+  void _showError(String msg) {
+    TopToast.show(
+      context,
+      backgroundColor: AppTheme.danger,
+      content: Row(
+        children: [
+          const Icon(
+            Icons.error_outline_rounded,
+            color: Colors.white,
+            size: 20,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              msg,
+              style: const TextStyle(
+                fontFamily: 'Poppins',
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

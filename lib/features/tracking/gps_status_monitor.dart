@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
@@ -28,6 +29,7 @@ class _GpsStatusMonitorState extends State<GpsStatusMonitor> with WidgetsBinding
   }
 
   Future<void> _initNotifications() async {
+    if (kIsWeb) return;
     if (_notificationsInitialized) return;
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -48,11 +50,13 @@ class _GpsStatusMonitorState extends State<GpsStatusMonitor> with WidgetsBinding
     _checkGpsStatus();
 
     // 2. Stream subscription for real-time changes
-    _gpsStatusSubscription = Geolocator.getServiceStatusStream().listen((ServiceStatus status) {
-      if (status == ServiceStatus.disabled) {
-        _handleGpsDisabled();
-      }
-    });
+    if (!kIsWeb) {
+      _gpsStatusSubscription = Geolocator.getServiceStatusStream().listen((ServiceStatus status) {
+        if (status == ServiceStatus.disabled) {
+          _handleGpsDisabled();
+        }
+      });
+    }
   }
 
   Future<void> _checkGpsStatus() async {
@@ -80,6 +84,7 @@ class _GpsStatusMonitorState extends State<GpsStatusMonitor> with WidgetsBinding
   }
 
   Future<void> _showGpsDisabledNotification() async {
+    if (kIsWeb) return;
     const AndroidNotificationDetails androidPlatformChannelSpecifics = AndroidNotificationDetails(
       'gps_status_alerts',
       'GPS Status Alerts',

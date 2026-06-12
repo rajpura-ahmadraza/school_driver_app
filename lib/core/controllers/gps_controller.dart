@@ -6,6 +6,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart' hide Trans;
 import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../api/api_client.dart';
 
 final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
@@ -13,6 +14,7 @@ final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
 bool _notificationsInitialized = false;
 
 Future<void> _initNotifications() async {
+  if (kIsWeb) return;
   if (_notificationsInitialized) return;
   const AndroidInitializationSettings initializationSettingsAndroid =
       AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -37,6 +39,7 @@ const _trackingNotificationDetails =
     NotificationDetails(android: _trackingNotificationAndroid);
 
 Future<void> _showTrackingStartedNotification() async {
+  if (kIsWeb) return;
   await _initNotifications();
   await _flutterLocalNotificationsPlugin.show(
     id: 0,
@@ -47,6 +50,7 @@ Future<void> _showTrackingStartedNotification() async {
 }
 
 Future<void> _showTrackingStoppedNotification() async {
+  if (kIsWeb) return;
   await _initNotifications();
   await _flutterLocalNotificationsPlugin.show(
     id: 1,
@@ -93,7 +97,7 @@ class GpsController extends GetxController {
     }
 
     // Request notification permission for foreground service on Android 13+
-    if (defaultTargetPlatform == TargetPlatform.android) {
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
       await Permission.notification.request();
     }
 
@@ -112,7 +116,7 @@ class GpsController extends GetxController {
 
     // 3. Subscribe to position stream
     LocationSettings locationSettings;
-    if (defaultTargetPlatform == TargetPlatform.android) {
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
       locationSettings = AndroidSettings(
         accuracy: LocationAccuracy.high,
         distanceFilter: 5,
@@ -124,8 +128,8 @@ class GpsController extends GetxController {
           enableWakeLock: true,
         ),
       );
-    } else if (defaultTargetPlatform == TargetPlatform.iOS ||
-        defaultTargetPlatform == TargetPlatform.macOS) {
+    } else if (!kIsWeb && (defaultTargetPlatform == TargetPlatform.iOS ||
+        defaultTargetPlatform == TargetPlatform.macOS)) {
       locationSettings = AppleSettings(
         accuracy: LocationAccuracy.high,
         distanceFilter: 5,
@@ -179,6 +183,20 @@ class GpsController extends GetxController {
     try {
       await _api.post('/bus/stop-tracking');
     } catch (_) {}
+
+    // Clear attendance keys for today when tracking is stopped
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final keys = prefs.getKeys();
+      final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+      for (final key in keys) {
+        if (key.startsWith('attendance_') && key.contains(today)) {
+          await prefs.remove(key);
+        }
+      }
+    } catch (_) {
+      // Ignore
+    }
 
     _smoothedSpeedKmh = null;
     isTracking.value = false;

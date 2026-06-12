@@ -6,6 +6,7 @@ import 'package:get/get.dart' hide Trans;
 import 'package:go_router/go_router.dart';
 import '../../core/controllers/auth_controller.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/top_toast.dart';
 
 abstract final class _ForgotUi {
   static const canvas = Color(0xFFF1F5F9);
@@ -78,28 +79,28 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
   }
 
   void _showError(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(
-              Icons.error_outline_rounded,
-              color: Colors.white,
-              size: 20,
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                StringTranslateExtension(msg).tr(),
-                style: const TextStyle(fontFamily: 'Poppins'),
+    TopToast.show(
+      context,
+      backgroundColor: AppTheme.danger,
+      content: Row(
+        children: [
+          const Icon(
+            Icons.error_outline_rounded,
+            color: Colors.white,
+            size: 20,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              StringTranslateExtension(msg).tr(),
+              style: const TextStyle(
+                fontFamily: 'Poppins',
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
               ),
             ),
-          ],
-        ),
-        backgroundColor: AppTheme.danger,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        margin: const EdgeInsets.all(16),
+          ),
+        ],
       ),
     );
   }
