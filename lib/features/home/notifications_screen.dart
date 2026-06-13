@@ -238,20 +238,38 @@ class NotificationsScreen extends StatefulWidget {
   State<NotificationsScreen> createState() => _NotificationsScreenState();
 }
 
-class _NotificationsScreenState extends State<NotificationsScreen> {
+class _NotificationsScreenState extends State<NotificationsScreen>
+    with SingleTickerProviderStateMixin {
   late final NotificationsController ctrl;
   final _scrollCtrl = ScrollController();
+
+  late AnimationController _fadeCtrl;
+  late Animation<double> _fadeAnim;
+  late Animation<Offset> _slideAnim;
 
   @override
   void initState() {
     super.initState();
     ctrl = Get.put(NotificationsController());
     _scrollCtrl.addListener(_onScroll);
+
+    _fadeCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    )..forward();
+    _fadeAnim = CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeOutCubic);
+    _slideAnim = Tween<Offset>(
+      begin: Offset.zero,
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeOutCubic),
+    );
   }
 
   @override
   void dispose() {
     _scrollCtrl.dispose();
+    _fadeCtrl.dispose();
     super.dispose();
   }
 
@@ -427,7 +445,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           }),
         ],
       ),
-      body: Obx(() {
+      body: FadeTransition(
+        opacity: _fadeAnim,
+        child: SlideTransition(
+          position: _slideAnim,
+          child: Obx(() {
         if (ctrl.isLoading.value) {
           return const _NotificationsLoadingShimmer();
         }
@@ -615,7 +637,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           ),
         );
       }),
-    );
+    ),
+  ),
+);
   }
 }
 
