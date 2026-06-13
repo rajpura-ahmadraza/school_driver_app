@@ -1,7 +1,10 @@
 import 'dart:convert';
+import 'dart:io';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../api/api_client.dart';
+import '../../features/home/notification_service.dart';
 
 const _lastEmailKey = 'last_login_email';
 
@@ -31,7 +34,7 @@ class AuthController extends GetxController {
       isInitializing.value = true;
 
       final prefs = await SharedPreferences.getInstance();
-      
+
       // Load cached token and user data from SharedPreferences first
       final savedToken = prefs.getString('persistent_driver_token');
       final savedUserJson = prefs.getString('persistent_driver_user');
@@ -66,7 +69,7 @@ class AuthController extends GetxController {
 
       try {
         // Verify token with server
-        final response = await _api.post('/auth/me');
+        final response = await _api.get('/auth/me');
 
         final userData = Map<String, dynamic>.from(
           response.data['user'] ?? response.data,
@@ -112,12 +115,34 @@ class AuthController extends GetxController {
       isLoading.value = true;
       error.value = null;
 
+      final deviceInfo = await _getDeviceInfo();
+      final userFcm = await NotificationService.instance.getFCMToken();
+
+      final loginData = {
+        'email': email.trim(),
+        'password': password,
+        'device_id': userFcm?.toString() ?? ' ',
+        'fcm_token': userFcm?.toString() ?? ' ',
+        'device_info': deviceInfo['device_model']?.toString() ?? 'Unknown',
+        'device_type': deviceInfo['device_type']?.toString() ?? 'Unknown',
+        'device_model': deviceInfo['device_model']?.toString() ?? 'Unknown',
+        'device_platform':
+            deviceInfo['device_platform']?.toString() ?? 'Unknown',
+        'device_uuid': deviceInfo['device_uuid']?.toString() ?? 'Unknown',
+        'device_version': deviceInfo['device_version']?.toString() ?? 'Unknown',
+        'device_manufacturer':
+            deviceInfo['device_manufacturer']?.toString() ?? 'Unknown',
+        'device_IsVirtual':
+            deviceInfo['device_IsVirtual']?.toString() ?? 'false',
+        'app_version_code': '1',
+      };
+
+      // ignore: avoid_print
+      print("Login Request Parameters: $loginData");
+
       final response = await _api.post(
         '/auth/login',
-        {
-          'email': email.trim(),
-          'password': password,
-        },
+        loginData,
       );
 
       final data = Map<String, dynamic>.from(response.data);
@@ -202,5 +227,46 @@ class AuthController extends GetxController {
     isLoading.value = false;
     error.value = null;
     isInitializing.value = false;
+  }
+
+  Future<Map<String, dynamic>> _getDeviceInfo() async {
+    final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
+    Map<String, dynamic> deviceData = {
+      'device_model': 'Unknown',
+      'device_type': 'Unknown',
+      'device_platform': 'Unknown',
+      'device_uuid': 'Unknown',
+      'device_version': 'Unknown',
+      'device_manufacturer': 'Unknown',
+      'device_IsVirtual': 'false',
+    };
+
+    try {
+      if (Platform.isAndroid) {
+        final androidInfo = await deviceInfoPlugin.androidInfo;
+        deviceData = {
+          'device_model': androidInfo.model,
+          'device_type': 'Android',
+          'device_platform': 'Android ${androidInfo.version.release}',
+          'device_uuid': androidInfo.id,
+          'device_version': androidInfo.version.sdkInt.toString(),
+          'device_manufacturer': androidInfo.manufacturer,
+          'device_IsVirtual': (!androidInfo.isPhysicalDevice).toString(),
+        };
+      } else if (Platform.isIOS) {
+        final iosInfo = await deviceInfoPlugin.iosInfo;
+        deviceData = {
+          'device_model': iosInfo.model,
+          'device_type': 'iOS',
+          'device_platform': iosInfo.systemName,
+          'device_uuid': iosInfo.identifierForVendor ?? 'Unknown',
+          'device_version': iosInfo.systemVersion,
+          'device_manufacturer': 'Apple',
+          'device_IsVirtual': (!iosInfo.isPhysicalDevice).toString(),
+        };
+      }
+    } catch (_) {}
+
+    return deviceData;
   }
 }

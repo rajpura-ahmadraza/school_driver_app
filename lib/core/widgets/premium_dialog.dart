@@ -21,7 +21,7 @@ Future<void> showPremiumTwoButtonDialog({
   required Color confirmColor,
   required VoidCallback onCancel,
   required VoidCallback onConfirm,
-  bool barrierDismissible = true,
+  bool barrierDismissible = false,
   bool useRootNavigator = false,
 }) {
   return showDialog<void>(
@@ -51,6 +51,42 @@ Future<void> showPremiumTwoButtonDialog({
               ),
             ),
           ],
+        ),
+      ),
+    ),
+  );
+}
+
+/// Standard one-button premium dialog (confirm/OK).
+Future<void> showPremiumOneButtonDialog({
+  required BuildContext context,
+  required IconData icon,
+  required Color iconColor,
+  required String title,
+  required String message,
+  required String buttonLabel,
+  required Color buttonColor,
+  required VoidCallback onPressed,
+  bool barrierDismissible = false,
+  bool useRootNavigator = false,
+}) {
+  return showDialog<void>(
+    context: context,
+    barrierDismissible: barrierDismissible,
+    useRootNavigator: useRootNavigator,
+    builder: (dialogContext) => PremiumDialogFrame(
+      child: PremiumDialogBody(
+        icon: icon,
+        iconColor: iconColor,
+        title: title,
+        message: message,
+        actions: SizedBox(
+          width: double.infinity,
+          child: PremiumDialogFilledButton(
+            label: buttonLabel,
+            color: buttonColor,
+            onPressed: onPressed,
+          ),
         ),
       ),
     ),

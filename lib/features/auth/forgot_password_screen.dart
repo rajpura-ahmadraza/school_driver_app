@@ -148,6 +148,43 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
       final authController = Get.find<AuthController>();
       final isLoading = authController.isLoading.value;
 
+      final formWidget = Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 450),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(22, 26, 22, 28),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(26),
+              border: Border.all(
+                color: const Color(0xFFE2E8F0),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: _ForgotUi.mid.withValues(alpha: 0.1),
+                  blurRadius: 32,
+                  offset: const Offset(0, 12),
+                ),
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: AnimatedCrossFade(
+              duration: const Duration(milliseconds: 400),
+              firstChild: _buildForm(isLoading),
+              secondChild: _buildSuccessState(),
+              crossFadeState: _success
+                  ? CrossFadeState.showSecond
+                  : CrossFadeState.showFirst,
+            ),
+          ),
+        ),
+      );
+
       return Scaffold(
         backgroundColor: _ForgotUi.canvas,
         body: FadeTransition(
@@ -158,45 +195,21 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
               children: [
                 const _ForgotHeader(),
                 Expanded(
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.fromLTRB(22, 8, 22, 28),
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 450),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return SingleChildScrollView(
+                        physics: const BouncingScrollPhysics(),
                         child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.fromLTRB(22, 26, 22, 28),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(26),
-                            border: Border.all(
-                              color: const Color(0xFFE2E8F0),
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: _ForgotUi.mid.withValues(alpha: 0.1),
-                                blurRadius: 32,
-                                offset: const Offset(0, 12),
-                              ),
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.04),
-                                blurRadius: 12,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
+                          constraints: BoxConstraints(
+                            minHeight: constraints.maxHeight,
                           ),
-                          child: AnimatedCrossFade(
-                            duration: const Duration(milliseconds: 400),
-                            firstChild: _buildForm(isLoading),
-                            secondChild: _buildSuccessState(),
-                            crossFadeState: _success
-                                ? CrossFadeState.showSecond
-                                : CrossFadeState.showFirst,
+                          padding: const EdgeInsets.fromLTRB(22, 8, 22, 28),
+                          child: Center(
+                            child: formWidget,
                           ),
                         ),
-                      ),
-                    ),
+                      );
+                    }
                   ),
                 ),
               ],
@@ -411,11 +424,16 @@ class _ForgotHeaderState extends State<_ForgotHeader>
   @override
   Widget build(BuildContext context) {
     final top = MediaQuery.paddingOf(context).top;
+    final size = MediaQuery.sizeOf(context);
+    final isTablet = size.width >= 600;
+
+    final targetHeight = size.height * 0.25;
+    final height = targetHeight.clamp(180.0, 260.0);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: SizedBox(
-        height: top + 180,
+        height: top + height,
         child: AnimatedBuilder(
           animation: _driftCtrl,
           builder: (context, _) {
@@ -438,19 +456,19 @@ class _ForgotHeaderState extends State<_ForgotHeader>
                     ),
                   ),
                   Positioned(
-                    top: top + 20 + math.sin(t) * 10,
+                    top: top + (isTablet ? 30 : 20) + math.sin(t) * 10,
                     right: -30,
-                    child: const _Orb(
-                      size: 110,
-                      color: Color.fromARGB(20, 255, 255, 255),
+                    child: _Orb(
+                      size: isTablet ? 130 : 110,
+                      color: const Color.fromARGB(20, 255, 255, 255),
                     ),
                   ),
                   Positioned(
-                    bottom: 40,
+                    bottom: isTablet ? 50 : 40,
                     left: -40 + math.cos(t) * 12,
-                    child: const _Orb(
-                      size: 80,
-                      color: Color.fromARGB(30, 255, 255, 255),
+                    child: _Orb(
+                      size: isTablet ? 90 : 80,
+                      color: const Color.fromARGB(30, 255, 255, 255),
                     ),
                   ),
                   SafeArea(
@@ -458,90 +476,90 @@ class _ForgotHeaderState extends State<_ForgotHeader>
                     child: Stack(
                       children: [
                         Center(
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  width: 72,
-                                  height: 72,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(22),
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                      colors: [
-                                        Colors.white.withValues(alpha: 0.3),
-                                        Colors.white.withValues(alpha: 0.1),
+                          child: SingleChildScrollView(
+                            physics: const NeverScrollableScrollPhysics(),
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    width: isTablet ? 80 : 72,
+                                    height: isTablet ? 80 : 72,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(isTablet ? 24 : 22),
+                                      gradient: LinearGradient(
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                        colors: [
+                                          Colors.white.withValues(alpha: 0.3),
+                                          Colors.white.withValues(alpha: 0.1),
+                                        ],
+                                      ),
+                                      border: Border.all(
+                                        color: Colors.white.withValues(alpha: 0.45),
+                                        width: 1.5,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withValues(alpha: 0.2),
+                                          blurRadius: 24,
+                                          offset: const Offset(0, 10),
+                                        ),
                                       ],
                                     ),
-                                    border: Border.all(
-                                      color:
-                                          Colors.white.withValues(alpha: 0.45),
-                                      width: 1.5,
+                                    child: Icon(
+                                      Icons.lock_reset_rounded,
+                                      size: isTablet ? 44 : 40,
+                                      color: Colors.white,
                                     ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color:
-                                            Colors.black.withValues(alpha: 0.2),
-                                        blurRadius: 24,
-                                        offset: const Offset(0, 10),
+                                  ),
+                                  SizedBox(height: isTablet ? 16 : 14),
+                                  ShaderMask(
+                                    shaderCallback: (bounds) =>
+                                        const LinearGradient(
+                                      colors: [Colors.white, Color(0xFFFCE7F3)],
+                                    ).createShader(bounds),
+                                    child: Text(
+                                      'app_name'.tr(),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontFamily: 'Poppins',
+                                        fontSize: isTablet ? 28 : 24,
+                                        fontWeight: FontWeight.w800,
+                                        color: Colors.white,
+                                        height: 1.15,
                                       ),
-                                    ],
-                                  ),
-                                  child: const Icon(
-                                    Icons.lock_reset_rounded,
-                                    size: 40,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                const SizedBox(height: 14),
-                                ShaderMask(
-                                  shaderCallback: (bounds) =>
-                                      const LinearGradient(
-                                    colors: [Colors.white, Color(0xFFFCE7F3)],
-                                  ).createShader(bounds),
-                                  child: Text(
-                                    'app_name'.tr(),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(
-                                      fontFamily: 'Poppins',
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.w800,
-                                      color: Colors.white,
-                                      height: 1.15,
                                     ),
                                   ),
-                                ),
-                                const SizedBox(height: 6),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.12),
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(
-                                      color:
-                                          Colors.white.withValues(alpha: 0.2),
+                                  const SizedBox(height: 6),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withValues(alpha: 0.12),
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(
+                                        color: Colors.white.withValues(alpha: 0.2),
+                                      ),
+                                    ),
+                                    child: const Text(
+                                      'Reset Credentials',
+                                      style: TextStyle(
+                                        fontFamily: 'Poppins',
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.white,
+                                        letterSpacing: 0.5,
+                                      ),
                                     ),
                                   ),
-                                  child: const Text(
-                                    'Reset Credentials',
-                                    style: TextStyle(
-                                      fontFamily: 'Poppins',
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.white,
-                                      letterSpacing: 0.5,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         ),

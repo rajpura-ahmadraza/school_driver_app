@@ -76,6 +76,19 @@ class _TrackingScreenState extends State<TrackingScreen>
   }
 
   void _handleError(String errKey) {
+    if (errKey == 'no_internet') {
+      showPremiumOneButtonDialog(
+        context: context,
+        icon: Icons.wifi_off_rounded,
+        iconColor: AppTheme.danger,
+        title: 'disconnected'.tr(),
+        message: 'no_internet'.tr(),
+        buttonLabel: 'confirm'.tr(),
+        buttonColor: AppTheme.primary,
+        onPressed: () => Navigator.pop(context),
+      );
+      return;
+    }
     if (errKey == 'gps_disabled') {
       showGpsDisabledDialog(context);
       return;

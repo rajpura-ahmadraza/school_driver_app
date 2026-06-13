@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart' hide Trans;
 import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -71,58 +72,65 @@ class _HomeScreenState extends State<HomeScreen>
       final user = Get.find<AuthController>().user.value;
       final name = (user?['name'] as String? ?? 'driver'.tr()).split(' ').first;
 
-      return Scaffold(
-        backgroundColor: _HomeUi.canvas,
-        body: FadeTransition(
-          opacity: _fadeAnim,
-          child: SlideTransition(
-            position: _slideAnim,
-            child: Column(
-              children: [
-                _HomeHeader(
-                  greeting: _greeting().tr(),
-                  name: name,
-                  user: user,
-                ),
-                Expanded(
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const _StatusCard(),
-                        const SizedBox(height: 20),
-                        _LabelRow(title: 'quick_actions'.tr()),
-                        const SizedBox(height: 12),
-                        _ActionCard(
-                          icon: Icons.groups_rounded,
-                          label: 'my_students'.tr(),
-                          subtitle: 'students_on_route'.tr(),
-                          onTap: () => context.push(
-                            '${AppRoutes.students}?route_id=2',
+      return PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, result) {
+          if (didPop) return;
+          _showExitConfirmation(context);
+        },
+        child: Scaffold(
+          backgroundColor: _HomeUi.canvas,
+          body: FadeTransition(
+            opacity: _fadeAnim,
+            child: SlideTransition(
+              position: _slideAnim,
+              child: Column(
+                children: [
+                  _HomeHeader(
+                    greeting: _greeting().tr(),
+                    name: name,
+                    user: user,
+                  ),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const _StatusCard(),
+                          const SizedBox(height: 20),
+                          _LabelRow(title: 'quick_actions'.tr()),
+                          const SizedBox(height: 12),
+                          _ActionCard(
+                            icon: Icons.groups_rounded,
+                            label: 'my_students'.tr(),
+                            subtitle: 'students_on_route'.tr(),
+                            onTap: () => context.push(
+                              '${AppRoutes.students}?route_id=2',
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 24),
-                        _TipsCard(
-                          key: ValueKey(context.locale.languageCode),
-                        ),
-                        const SizedBox(height: 24),
-                        // Bottom Action Buttons
-                        _BottomActionButtons(
-                          onLangPicker: () => _showLangPicker(context),
-                          onLogout: () => _confirmLogout(context),
-                        ),
-                      ],
+                          const SizedBox(height: 24),
+                          _TipsCard(
+                            key: ValueKey(context.locale.languageCode),
+                          ),
+                          const SizedBox(height: 24),
+                          // Bottom Action Buttons
+                          _BottomActionButtons(
+                            onLangPicker: () => _showLangPicker(context),
+                            onLogout: () => _confirmLogout(context),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
       );
-    }); // end Obx
+    });
   }
 
   void _showLangPicker(BuildContext context) {
@@ -234,6 +242,24 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
+  void _showExitConfirmation(BuildContext context) {
+    showPremiumTwoButtonDialog(
+      context: context,
+      icon: Icons.exit_to_app_rounded,
+      iconColor: AppTheme.danger,
+      title: 'exit_app'.tr(),
+      message: 'confirm_exit_msg'.tr(),
+      cancelLabel: 'cancel'.tr(),
+      confirmLabel: 'exit'.tr(),
+      confirmColor: AppTheme.danger,
+      onCancel: () => Navigator.pop(context),
+      onConfirm: () {
+        Navigator.pop(context);
+        SystemNavigator.pop();
+      },
+    );
+  }
+
   void _confirmLogout(BuildContext context) {
     showPremiumTwoButtonDialog(
       context: context,
@@ -299,7 +325,7 @@ class _HomeHeaderState extends State<_HomeHeader>
         : 'D';
 
     return SizedBox(
-      height: top + (hasContactInfo ? 160 : 130),
+      height: top + (hasContactInfo ? 130 : 130),
       child: AnimatedBuilder(
         animation: _driftCtrl,
         builder: (context, _) {
@@ -504,10 +530,6 @@ class _HomeHeaderState extends State<_HomeHeader>
                                     ),
                                   if (widget.user?['phone'] != null) ...[
                                     const SizedBox(width: 8),
-                                    _HomeInfoChip(
-                                      icon: Icons.call_outlined,
-                                      text: widget.user!['phone'] as String,
-                                    ),
                                   ],
                                 ],
                               ),
@@ -703,6 +725,19 @@ class _StatusCardState extends State<_StatusCard> {
   }
 
   void _handleError(String errKey) {
+    if (errKey == 'no_internet') {
+      showPremiumOneButtonDialog(
+        context: context,
+        icon: Icons.wifi_off_rounded,
+        iconColor: AppTheme.danger,
+        title: 'disconnected'.tr(),
+        message: 'no_internet'.tr(),
+        buttonLabel: 'confirm'.tr(),
+        buttonColor: AppTheme.primary,
+        onPressed: () => Navigator.pop(context),
+      );
+      return;
+    }
     if (errKey == 'gps_disabled') {
       showGpsDisabledDialog(context);
       return;
@@ -731,7 +766,6 @@ class _StatusCardState extends State<_StatusCard> {
     return Obx(() {
       final gpsController = Get.find<GpsController>();
       final isTracking = gpsController.isTracking.value;
-      final speed = gpsController.speed.value;
 
       final accent = isTracking ? const Color(0xFF10B981) : _HomeUi.teal;
 
@@ -961,98 +995,41 @@ class _StatusCardState extends State<_StatusCard> {
 
                     const SizedBox(height: 16),
 
-                    // Speed Section (only when tracking)
+                    // Tracking Description Banner (only when tracking)
                     if (isTracking)
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 14,
+                          horizontal: 14,
+                          vertical: 12,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.92),
-                          borderRadius: BorderRadius.circular(18),
+                          color: const Color(0xFFECFDF5),
+                          borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color:
-                                const Color(0xFFA7F3D0).withValues(alpha: 0.8),
+                            color: const Color(0xFFA7F3D0),
                           ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF10B981)
-                                  .withValues(alpha: 0.06),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
                         ),
                         child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Container(
-                              width: 46,
-                              height: 46,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(14),
-                                gradient: LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    _HomeUi.teal.withValues(alpha: 0.15),
-                                    _HomeUi.teal.withValues(alpha: 0.05),
-                                  ],
-                                ),
-                                border: Border.all(
-                                  color: _HomeUi.teal.withValues(alpha: 0.2),
-                                ),
-                              ),
-                              child: const Icon(
-                                Icons.speed_rounded,
-                                size: 24,
-                                color: _HomeUi.teal,
-                              ),
+                            const Icon(
+                              Icons.info_outline_rounded,
+                              size: 18,
+                              color: Color(0xFF059669),
                             ),
-                            const SizedBox(width: 14),
+                            const SizedBox(width: 10),
                             Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'speed'.tr(),
-                                    style: const TextStyle(
-                                      fontFamily: 'Poppins',
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                      color: _HomeUi.inkMuted,
-                                    ),
-                                  ),
-                                  Text(
-                                    'kmh'.tr(),
-                                    style: const TextStyle(
-                                      fontFamily: 'Poppins',
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w700,
-                                      color: _HomeUi.teal,
-                                    ),
-                                  ),
-                                ],
+                              child: Text(
+                                'tracking_desc'.tr(),
+                                textAlign: TextAlign.start,
+                                style: const TextStyle(
+                                  fontFamily: 'Poppins',
+                                  fontSize: 13,
+                                  color: Color(0xFF047857),
+                                  height: 1.45,
+                                ),
                               ),
-                            ),
-                            TweenAnimationBuilder<double>(
-                              tween: Tween<double>(begin: 0.0, end: speed),
-                              duration: const Duration(milliseconds: 600),
-                              curve: Curves.easeOutCubic,
-                              builder: (context, value, child) {
-                                return Text(
-                                  value.toStringAsFixed(1),
-                                  style: const TextStyle(
-                                    fontFamily: 'Poppins',
-                                    fontSize: 36,
-                                    fontWeight: FontWeight.w900,
-                                    color: _HomeUi.ink,
-                                    height: 1,
-                                    letterSpacing: -0.5,
-                                  ),
-                                );
-                              },
                             ),
                           ],
                         ),

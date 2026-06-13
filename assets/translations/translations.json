@@ -98,7 +98,10 @@
     "password_sent_desc": "A new temporary password has been successfully sent to your email.",
     "debug_password_alert": "Debug Password (Local Dev Only):",
     "copy_success": "Copied to clipboard!",
-    "notifications": "Notifications"
+    "notifications": "Notifications",
+    "exit_app": "Exit App",
+    "confirm_exit_msg": "Are you sure you want to exit the app?",
+    "exit": "Exit"
   },
   "hi": {
     "app_name": "स्कूल ड्राइवर",
@@ -199,7 +202,10 @@
     "password_sent_desc": "आपके ईमेल पर सफलतापूर्वक एक नया अस्थायी पासवर्ड भेज दिया गया है।",
     "debug_password_alert": "डीबग पासवर्ड (केवल स्थानीय देव):",
     "copy_success": "क्लिपबोर्ड पर कॉपी किया गया!",
-    "notifications": "सूचनाएं"
+    "notifications": "सूचनाएं",
+    "exit_app": "ऐप से बाहर निकलें",
+    "confirm_exit_msg": "क्या आप वाकई ऐप से बाहर निकलना चाहते हैं?",
+    "exit": "बाहर निकलें"
   },
   "gu": {
     "app_name": "શાળા ચાલક",
@@ -300,6 +306,9 @@
     "password_sent_desc": "તમારા ઇમેઇલ પર એક નવો કામચલાઉ પાસવર્ડ સફળતાપૂર્વક મોકલવામાં આવ્યો છે.",
     "debug_password_alert": "ડીબગ પાસવર્ડ (ફક્ત લોકલ ડેવ):",
     "copy_success": "ક્લિપબોર્ડ પર કોપી કરેલ!",
-    "notifications": "સૂચનાઓ"
+    "notifications": "સૂચનાઓ",
+    "exit_app": "એપ બંધ કરો",
+    "confirm_exit_msg": "શું તમે ખરેખર એપ બંધ કરવા માંગો છો?",
+    "exit": "બંધ કરો"
   }
 }

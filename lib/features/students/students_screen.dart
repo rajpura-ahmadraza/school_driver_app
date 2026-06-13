@@ -4,10 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart' hide Trans;
 import 'dart:math' as math;
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import '../../core/api/api_client.dart';
 import '../../core/controllers/auth_controller.dart';
-import '../../core/controllers/gps_controller.dart';
 import '../../core/utils/student_image_url.dart';
 import '../../core/widgets/top_toast.dart';
 
@@ -71,7 +70,6 @@ class _StudentsScreenState extends State<StudentsScreen>
     with SingleTickerProviderStateMixin {
   final Set<int> _markedAbsent = {};
   final Set<int> _markedPresent = {};
-  bool _hasSavedAttendanceToday = false;
   bool _saved = false;
   String _searchQuery = '';
 
@@ -84,29 +82,32 @@ class _StudentsScreenState extends State<StudentsScreen>
   bool? getStudentStatus(int id) {
     if (_markedAbsent.contains(id)) return false;
     if (_markedPresent.contains(id)) return true;
-    if (_hasSavedAttendanceToday) return true;
     return null;
   }
 
-  StreamSubscription<bool>? _trackingSubscription;
-
   Future<void> _loadSavedAttendance() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
+      final box = Hive.box('attendance_box');
       final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-      final key = 'attendance_${widget.routeId}_$today';
+      final keyAbsent = 'attendance_${widget.routeId}_absent_$today';
+      final keyPresent = 'attendance_${widget.routeId}_present_$today';
       final savedKey = 'attendance_saved_${widget.routeId}_$today';
-      final savedIds = prefs.getStringList(key);
-      final wasSaved = prefs.getBool(savedKey) ?? false;
-      if (wasSaved && savedIds != null) {
+      final List<dynamic>? savedAbsentIds = box.get(keyAbsent) as List<dynamic>?;
+      final List<dynamic>? savedPresentIds = box.get(keyPresent) as List<dynamic>?;
+      final bool wasSaved = box.get(savedKey, defaultValue: false) as bool;
+      if (wasSaved) {
         setState(() {
-          _hasSavedAttendanceToday = true;
           _markedAbsent.clear();
-          _markedAbsent.addAll(savedIds.map(int.parse));
+          if (savedAbsentIds != null) {
+            _markedAbsent.addAll(savedAbsentIds.cast<int>());
+          }
+          _markedPresent.clear();
+          if (savedPresentIds != null) {
+            _markedPresent.addAll(savedPresentIds.cast<int>());
+          }
         });
       } else {
         setState(() {
-          _hasSavedAttendanceToday = false;
           _markedAbsent.clear();
           _markedPresent.clear();
         });
@@ -135,19 +136,10 @@ class _StudentsScreenState extends State<StudentsScreen>
       CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeOutCubic),
     );
     _loadSavedAttendance();
-
-    // Listen to GPS tracking status changes to clear attendance if tracking is stopped
-    final gps = Get.find<GpsController>();
-    _trackingSubscription = gps.isTracking.listen((isTracking) {
-      if (!isTracking) {
-        _loadSavedAttendance();
-      }
-    });
   }
 
   @override
   void dispose() {
-    _trackingSubscription?.cancel();
     Get.delete<_StudentsController>(tag: widget.routeId.toString());
     _fadeCtrl.dispose();
     super.dispose();
@@ -217,6 +209,7 @@ class _StudentsScreenState extends State<StudentsScreen>
   }
 
   Widget _buildError(Object err) {
+    final isNoInternet = err.toString().contains('no_internet');
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(32),
@@ -229,15 +222,15 @@ class _StudentsScreenState extends State<StudentsScreen>
                 color: const Color(0xFFEF4444).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
-                Icons.wifi_off_rounded,
+              child: Icon(
+                isNoInternet ? Icons.wifi_off_rounded : Icons.error_outline_rounded,
                 size: 48,
-                color: Color(0xFFEF4444),
+                color: const Color(0xFFEF4444),
               ),
             ),
             const SizedBox(height: 20),
             Text(
-              'error'.tr(),
+              isNoInternet ? 'disconnected'.tr() : 'error'.tr(),
               style: const TextStyle(
                 fontFamily: 'Poppins',
                 fontSize: 18,
@@ -245,17 +238,31 @@ class _StudentsScreenState extends State<StudentsScreen>
                 color: _StudentsUi.ink,
               ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              err.toString(),
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontFamily: 'Poppins',
-                fontSize: 13,
-                color: _StudentsUi.inkMuted,
-                height: 1.4,
+            if (!isNoInternet) ...[
+              const SizedBox(height: 8),
+              Text(
+                err.toString(),
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 13,
+                  color: _StudentsUi.inkMuted,
+                  height: 1.4,
+                ),
               ),
-            ),
+            ] else ...[
+              const SizedBox(height: 8),
+              Text(
+                'no_internet'.tr(),
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 13,
+                  color: _StudentsUi.inkMuted,
+                  height: 1.4,
+                ),
+              ),
+            ],
             const SizedBox(height: 24),
             SizedBox(
               height: 46,
@@ -540,16 +547,15 @@ class _StudentsScreenState extends State<StudentsScreen>
     setState(() => _saved = true);
 
     try {
-      final prefs = await SharedPreferences.getInstance();
+      final box = Hive.box('attendance_box');
       final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-      final key = 'attendance_${widget.routeId}_$today';
+      final keyAbsent = 'attendance_${widget.routeId}_absent_$today';
+      final keyPresent = 'attendance_${widget.routeId}_present_$today';
       final savedKey = 'attendance_saved_${widget.routeId}_$today';
-      final idsList = _markedAbsent.map((id) => id.toString()).toList();
-      await prefs.setStringList(key, idsList);
-      await prefs.setBool(savedKey, true);
-      setState(() {
-        _hasSavedAttendanceToday = true;
-      });
+      await box.put(keyAbsent, _markedAbsent.toList());
+      await box.put(keyPresent, _markedPresent.toList());
+      await box.put(savedKey, true);
+      // Saved successfully
     } catch (e) {
       // Ignore
     }
@@ -557,7 +563,7 @@ class _StudentsScreenState extends State<StudentsScreen>
     if (!mounted) return;
     TopToast.show(
       context,
-      backgroundColor: _StudentsUi.teal,
+      backgroundColor: const Color(0xFF10B981),
       content: Row(
         children: [
           const Icon(

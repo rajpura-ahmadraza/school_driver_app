@@ -1,13 +1,19 @@
 import 'dart:async';
-import 'dart:math' show sin, cos, sqrt, atan2, pi;
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart' show Icons, Navigator;
+import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart' hide Trans;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import '../api/api_client.dart';
+import '../theme/app_theme.dart';
+import '../widgets/premium_dialog.dart';
+import '../router/app_router.dart';
 
 final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
@@ -65,11 +71,6 @@ class GpsController extends GetxController {
 
   GpsController(this._api);
 
-  // ── Thresholds ────────────────────────────────────────────
-  static const int _intervalSeconds = 30;
-  static const double _minDistMeters = 30.0;
-  static const double _emaAlpha = 0.2;
-
   // ── Observable state ──────────────────────────────────────
   final RxBool isTracking = false.obs;
   final RxDouble speed = 0.0.obs;
@@ -78,17 +79,151 @@ class GpsController extends GetxController {
   final Rx<String?> error = Rx<String?>(null);
   final Rx<DateTime?> lastSentAt = Rx<DateTime?>(null);
 
-  // ── Internals ─────────────────────────────────────────────
-  StreamSubscription<Position>? _posStream;
-  Timer? _timer;
-  Position? _lastSent;
-  DateTime? _lastSentAt;
-  int? _routeId;
-  double? _smoothedSpeedKmh;
+  // ── Suspension & Dialog state ─────────────────────────────
+  bool _suspendedDueToOffline = false;
+  bool _isOfflineDialogShowing = false;
 
-  // ── Start tracking ────────────────────────────────────────
+  // ── Internals ─────────────────────────────────────────────
+  StreamSubscription<Map<String, dynamic>?>? _serviceEventSubscription;
+  StreamSubscription<Map<String, dynamic>?>? _networkStatusSubscription;
+  StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
+
+  @override
+  void onInit() {
+    super.onInit();
+    _checkRunningStatus();
+    _startConnectivityListener();
+  }
+
+  void _startConnectivityListener() {
+    _connectivitySubscription?.cancel();
+    _connectivitySubscription = Connectivity().onConnectivityChanged.listen((results) {
+      final isOffline = results.isEmpty ||
+          results.contains(ConnectivityResult.none) ||
+          (!results.contains(ConnectivityResult.wifi) &&
+           !results.contains(ConnectivityResult.mobile) &&
+           !results.contains(ConnectivityResult.ethernet) &&
+           !results.contains(ConnectivityResult.vpn));
+
+      if (isOffline) {
+        if (isTracking.value) {
+          // Wait 3 seconds to confirm it's not a transient disconnect
+          Future.delayed(const Duration(seconds: 3), () async {
+            if (isTracking.value) {
+              final doubleCheck = await Connectivity().checkConnectivity();
+              final stillOffline = doubleCheck.isEmpty ||
+                  doubleCheck.contains(ConnectivityResult.none) ||
+                  (!doubleCheck.contains(ConnectivityResult.wifi) &&
+                   !doubleCheck.contains(ConnectivityResult.mobile) &&
+                   !doubleCheck.contains(ConnectivityResult.ethernet) &&
+                   !doubleCheck.contains(ConnectivityResult.vpn));
+              if (stillOffline) {
+                _suspendedDueToOffline = true;
+                _showOfflineDialog();
+              }
+            }
+          });
+        }
+      } else {
+        // We are online!
+        if (_suspendedDueToOffline) {
+          _suspendedDueToOffline = false;
+          _dismissOfflineDialog();
+        }
+      }
+    });
+  }
+
+  void _showOfflineDialog() {
+    if (_isOfflineDialogShowing) return;
+    final context = rootNavigatorKey.currentContext;
+    if (context != null) {
+      _isOfflineDialogShowing = true;
+      showPremiumOneButtonDialog(
+        context: context,
+        icon: Icons.wifi_off_rounded,
+        iconColor: AppTheme.danger,
+        title: 'disconnected'.tr(),
+        message: 'no_internet'.tr(),
+        buttonLabel: 'confirm'.tr(),
+        buttonColor: AppTheme.primary,
+        onPressed: () {
+          _isOfflineDialogShowing = false;
+          Navigator.pop(context);
+        },
+      ).then((_) {
+        _isOfflineDialogShowing = false;
+      });
+    }
+  }
+
+  void _dismissOfflineDialog() {
+    if (_isOfflineDialogShowing) {
+      final context = rootNavigatorKey.currentContext;
+      if (context != null) {
+        _isOfflineDialogShowing = false;
+        Navigator.pop(context);
+      }
+    }
+  }
+
+  Future<void> _checkRunningStatus() async {
+    final running = await FlutterBackgroundService().isRunning();
+    if (running) {
+      isTracking.value = true;
+      _listenToServiceEvents();
+
+      // Check if background service was suspended offline
+      final prefs = await SharedPreferences.getInstance();
+      final bgOffline = prefs.getBool('background_tracking_offline') ?? false;
+      if (bgOffline) {
+        _suspendedDueToOffline = true;
+        _showOfflineDialog();
+      }
+    }
+  }
+
+  void _listenToServiceEvents() {
+    _serviceEventSubscription?.cancel();
+    _serviceEventSubscription = FlutterBackgroundService()
+        .on('location_update')
+        .listen((event) {
+      if (event != null) {
+        latitude.value = (event['latitude'] as num?)?.toDouble();
+        longitude.value = (event['longitude'] as num?)?.toDouble();
+        speed.value = (event['speed'] as num?)?.toDouble() ?? 0.0;
+        if (event['lastSentAt'] != null) {
+          lastSentAt.value = DateTime.tryParse(event['lastSentAt'] as String);
+        }
+      }
+    });
+
+    _networkStatusSubscription?.cancel();
+    _networkStatusSubscription = FlutterBackgroundService()
+        .on('network_status')
+        .listen((event) {
+      if (event != null) {
+        final online = event['online'] as bool? ?? true;
+        if (!online) {
+          _suspendedDueToOffline = true;
+          _showOfflineDialog();
+        } else {
+          _suspendedDueToOffline = false;
+          _dismissOfflineDialog();
+        }
+      }
+    });
+  }
+
   Future<String?> start({int? routeId}) async {
     error.value = null;
+
+    // Check internet connection
+    final connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult.contains(ConnectivityResult.none)) {
+      error.value = 'no_internet';
+      return 'no_internet';
+    }
 
     // 1. Check service enabled
     if (!await Geolocator.isLocationServiceEnabled()) {
@@ -112,59 +247,25 @@ class GpsController extends GetxController {
       return 'location_permission_title';
     }
 
-    _routeId = routeId;
-
-    // 3. Subscribe to position stream
-    LocationSettings locationSettings;
-    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
-      locationSettings = AndroidSettings(
-        accuracy: LocationAccuracy.high,
-        distanceFilter: 5,
-        forceLocationManager: true,
-        intervalDuration: const Duration(seconds: 10),
-        foregroundNotificationConfig: const ForegroundNotificationConfig(
-          notificationText: 'Tracking your route in the background',
-          notificationTitle: 'School Driver Tracking',
-          enableWakeLock: true,
-        ),
-      );
-    } else if (!kIsWeb && (defaultTargetPlatform == TargetPlatform.iOS ||
-        defaultTargetPlatform == TargetPlatform.macOS)) {
-      locationSettings = AppleSettings(
-        accuracy: LocationAccuracy.high,
-        distanceFilter: 5,
-        pauseLocationUpdatesAutomatically: false,
-        allowBackgroundLocationUpdates: true,
-      );
-    } else {
-      locationSettings = const LocationSettings(
-        accuracy: LocationAccuracy.high,
-        distanceFilter: 5,
-      );
+    // Save configurations to SharedPreferences so the background service can access them
+    final prefs = await SharedPreferences.getInstance();
+    if (routeId != null) {
+      await prefs.setInt('tracking_route_id', routeId);
+    } else if (!prefs.containsKey('tracking_route_id')) {
+      await prefs.setInt('tracking_route_id', 2);
+    }
+    final token = await _api.getToken();
+    if (token != null) {
+      await prefs.setString('driver_jwt_token', token);
     }
 
-    _posStream = Geolocator.getPositionStream(
-      locationSettings: locationSettings,
-    ).listen(
-      _onPosition,
-      onError: (_) {},
-      cancelOnError: false,
-    );
+    // Start background tracking service
+    final isRunning = await FlutterBackgroundService().isRunning();
+    if (!isRunning) {
+      await FlutterBackgroundService().startService();
+    }
 
-    // 4. Fallback timer
-    _timer = Timer.periodic(
-      const Duration(seconds: _intervalSeconds),
-      (_) async {
-        try {
-          final pos = await Geolocator.getCurrentPosition(
-            locationSettings: const LocationSettings(
-              accuracy: LocationAccuracy.high,
-            ),
-          );
-          await _sendLocation(pos);
-        } catch (_) {}
-      },
-    );
+    _listenToServiceEvents();
 
     isTracking.value = true;
     _showTrackingStartedNotification();
@@ -172,13 +273,13 @@ class GpsController extends GetxController {
   }
 
   // ── Stop tracking ─────────────────────────────────────────
-  Future<void> stop() async {
-    _posStream?.cancel();
-    _timer?.cancel();
-    _posStream = null;
-    _timer = null;
-    _lastSent = null;
-    _lastSentAt = null;
+  Future<void> stop({bool keepSuspendedState = false}) async {
+    if (!keepSuspendedState) {
+      _suspendedDueToOffline = false;
+    }
+    FlutterBackgroundService().invoke('stopService');
+    _serviceEventSubscription?.cancel();
+    _serviceEventSubscription = null;
 
     try {
       await _api.post('/bus/stop-tracking');
@@ -186,19 +287,18 @@ class GpsController extends GetxController {
 
     // Clear attendance keys for today when tracking is stopped
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final keys = prefs.getKeys();
+      final box = Hive.box('attendance_box');
+      final keys = box.keys.toList();
       final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
       for (final key in keys) {
-        if (key.startsWith('attendance_') && key.contains(today)) {
-          await prefs.remove(key);
+        if (key is String && key.startsWith('attendance_') && key.contains(today)) {
+          await box.delete(key);
         }
       }
     } catch (_) {
       // Ignore
     }
 
-    _smoothedSpeedKmh = null;
     isTracking.value = false;
     speed.value = 0;
     latitude.value = null;
@@ -209,76 +309,12 @@ class GpsController extends GetxController {
     _showTrackingStoppedNotification();
   }
 
-  // ── Position update from stream ───────────────────────────
-  void _onPosition(Position pos) {
-    final rawSpeedKmh = (pos.speed < 0 ? 0.0 : pos.speed) * 3.6;
-    _smoothedSpeedKmh = _smoothedSpeedKmh == null
-        ? rawSpeedKmh
-        : _emaAlpha * rawSpeedKmh + (1 - _emaAlpha) * _smoothedSpeedKmh!;
-
-    final displaySpeed = _smoothedSpeedKmh! < 0.5 ? 0.0 : _smoothedSpeedKmh!;
-
-    speed.value = displaySpeed;
-    latitude.value = pos.latitude;
-    longitude.value = pos.longitude;
-
-    final now = DateTime.now();
-    final timeDiff = _lastSentAt == null
-        ? _intervalSeconds + 1
-        : now.difference(_lastSentAt!).inSeconds;
-    final distDiff = _lastSent == null
-        ? double.infinity
-        : _haversine(
-            _lastSent!.latitude,
-            _lastSent!.longitude,
-            pos.latitude,
-            pos.longitude,
-          );
-
-    if (timeDiff >= _intervalSeconds || distDiff >= _minDistMeters) {
-      _sendLocation(pos);
-    }
-  }
-
-  // ── Send to backend ───────────────────────────────────────
-  Future<void> _sendLocation(Position pos) async {
-    final speedKmh =
-        _smoothedSpeedKmh ?? ((pos.speed < 0 ? 0.0 : pos.speed) * 3.6);
-    try {
-      await _api.post('/bus/location', {
-        'latitude': pos.latitude,
-        'longitude': pos.longitude,
-        'speed': speedKmh,
-        'heading': pos.heading,
-        'accuracy': pos.accuracy,
-        if (_routeId != null) 'route_id': _routeId,
-      });
-
-      _lastSent = pos;
-      _lastSentAt = DateTime.now();
-      latitude.value = pos.latitude;
-      longitude.value = pos.longitude;
-      lastSentAt.value = _lastSentAt;
-    } catch (_) {}
-  }
-
-  // ── Haversine distance formula ────────────────────────────
-  double _haversine(double lat1, double lon1, double lat2, double lon2) {
-    const R = 6371000.0;
-    final dLat = (lat2 - lat1) * pi / 180;
-    final dLon = (lon2 - lon1) * pi / 180;
-    final a = sin(dLat / 2) * sin(dLat / 2) +
-        cos(lat1 * pi / 180) *
-            cos(lat2 * pi / 180) *
-            sin(dLon / 2) *
-            sin(dLon / 2);
-    return R * 2 * atan2(sqrt(a), sqrt(1 - a));
-  }
-
   @override
   void onClose() {
-    _posStream?.cancel();
-    _timer?.cancel();
+    _serviceEventSubscription?.cancel();
+    _networkStatusSubscription?.cancel();
+    _connectivitySubscription?.cancel();
     super.onClose();
   }
 }
+

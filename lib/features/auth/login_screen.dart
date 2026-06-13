@@ -248,6 +248,205 @@ class _LoginScreenState extends State<LoginScreen>
 
     return Obx(() {
       final isLoading = authController.isLoading.value;
+
+      final formWidget = Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(22, 26, 22, 28),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(26),
+              border: Border.all(
+                color: const Color(0xFFE2E8F0),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: _LoginUi.mid.withValues(alpha: 0.1),
+                  blurRadius: 32,
+                  offset: const Offset(0, 12),
+                ),
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Text(
+                    'Welcome Back 👋',
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                      color: _LoginUi.ink,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  const Text(
+                    'Sign in to your driver account',
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 13,
+                      color: _LoginUi.inkMuted,
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+                  TextFormField(
+                    controller: _emailCtrl,
+                    keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.next,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.deny(
+                        RegExp(r'\s'),
+                      ),
+                    ],
+                    style: const TextStyle(
+                      fontFamily: 'Poppins',
+                      fontWeight: FontWeight.w500,
+                    ),
+                    decoration: _fieldDecoration(
+                      label: 'email'.tr(),
+                      icon: Icons.alternate_email_rounded,
+                    ),
+                    validator: (v) {
+                      if (v == null || v.trim().isEmpty) {
+                        return 'email_required'.tr();
+                      }
+                      final emailRegex = RegExp(
+                        r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                      );
+                      if (!emailRegex.hasMatch(v.trim())) {
+                        return 'invalid_email'.tr();
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 18),
+                  TextFormField(
+                    controller: _passwordCtrl,
+                    obscureText: _obscure,
+                    textInputAction: TextInputAction.done,
+                    onFieldSubmitted: (_) => _login(),
+                    style: const TextStyle(
+                      fontFamily: 'Poppins',
+                      fontWeight: FontWeight.w500,
+                    ),
+                    decoration: _fieldDecoration(
+                      label: 'password'.tr(),
+                      icon: Icons.lock_outline_rounded,
+                      suffix: IconButton(
+                        icon: Icon(
+                          _obscure
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined,
+                          color: _LoginUi.inkMuted,
+                          size: 22,
+                        ),
+                        onPressed: () => setState(
+                          () => _obscure = !_obscure,
+                        ),
+                      ),
+                    ),
+                    validator: (v) {
+                      if (v == null || v.isEmpty) {
+                        return 'Password is required';
+                      }
+                      if (v.length < 6) {
+                        return 'Minimum 6 characters';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () => context
+                          .push(AppRoutes.forgotPassword),
+                      style: TextButton.styleFrom(
+                        foregroundColor: _LoginUi.teal,
+                        padding: EdgeInsets.zero,
+                        minimumSize: Size.zero,
+                        tapTargetSize:
+                            MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: Text(
+                        '${'forgot_password_title'.tr()}?',
+                        style: const TextStyle(
+                          fontFamily: 'Poppins',
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  _PremiumSignInButton(
+                    isLoading: isLoading,
+                    onPressed: _login,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 22),
+          Material(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            child: InkWell(
+              onTap: _showLanguagePicker,
+              borderRadius: BorderRadius.circular(16),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 14,
+                ),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: const Color(0xFFE2E8F0),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.translate_rounded,
+                      size: 20,
+                      color: _LoginUi.teal,
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      'select_language'.tr(),
+                      style: const TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: _LoginUi.ink,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    const Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      size: 22,
+                      color: _LoginUi.teal,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+
       return Scaffold(
         backgroundColor: _LoginUi.canvas,
         body: FadeTransition(
@@ -258,212 +457,24 @@ class _LoginScreenState extends State<LoginScreen>
               children: [
                 const _LoginHeader(),
                 Expanded(
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.fromLTRB(22, 8, 22, 28),
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 450),
-                        child: Column(
-                          children: [
-                            Container(
-                              width: double.infinity,
-                              padding:
-                                  const EdgeInsets.fromLTRB(22, 26, 22, 28),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(26),
-                                border: Border.all(
-                                  color: const Color(0xFFE2E8F0),
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: _LoginUi.mid.withValues(alpha: 0.1),
-                                    blurRadius: 32,
-                                    offset: const Offset(0, 12),
-                                  ),
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.04),
-                                    blurRadius: 12,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: Form(
-                                key: _formKey,
-                                child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
-                                  children: [
-                                    const Text(
-                                      'Welcome Back 👋',
-                                      style: TextStyle(
-                                        fontFamily: 'Poppins',
-                                        fontSize: 22,
-                                        fontWeight: FontWeight.w800,
-                                        color: _LoginUi.ink,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 6),
-                                    const Text(
-                                      'Sign in to your driver account',
-                                      style: TextStyle(
-                                        fontFamily: 'Poppins',
-                                        fontSize: 13,
-                                        color: _LoginUi.inkMuted,
-                                        height: 1.4,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 28),
-                                    TextFormField(
-                                      controller: _emailCtrl,
-                                      keyboardType: TextInputType.emailAddress,
-                                      textInputAction: TextInputAction.next,
-                                      inputFormatters: [
-                                        FilteringTextInputFormatter.deny(
-                                          RegExp(r'\s'),
-                                        ),
-                                      ],
-                                      style: const TextStyle(
-                                        fontFamily: 'Poppins',
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                      decoration: _fieldDecoration(
-                                        label: 'email'.tr(),
-                                        icon: Icons.alternate_email_rounded,
-                                      ),
-                                      validator: (v) {
-                                        if (v == null || v.trim().isEmpty) {
-                                          return 'email_required'.tr();
-                                        }
-                                        final emailRegex = RegExp(
-                                          r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-                                        );
-                                        if (!emailRegex.hasMatch(v.trim())) {
-                                          return 'invalid_email'.tr();
-                                        }
-                                        return null;
-                                      },
-                                    ),
-                                    const SizedBox(height: 18),
-                                    TextFormField(
-                                      controller: _passwordCtrl,
-                                      obscureText: _obscure,
-                                      textInputAction: TextInputAction.done,
-                                      onFieldSubmitted: (_) => _login(),
-                                      style: const TextStyle(
-                                        fontFamily: 'Poppins',
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                      decoration: _fieldDecoration(
-                                        label: 'password'.tr(),
-                                        icon: Icons.lock_outline_rounded,
-                                        suffix: IconButton(
-                                          icon: Icon(
-                                            _obscure
-                                                ? Icons.visibility_outlined
-                                                : Icons.visibility_off_outlined,
-                                            color: _LoginUi.inkMuted,
-                                            size: 22,
-                                          ),
-                                          onPressed: () => setState(
-                                            () => _obscure = !_obscure,
-                                          ),
-                                        ),
-                                      ),
-                                      validator: (v) {
-                                        if (v == null || v.isEmpty) {
-                                          return 'Password is required';
-                                        }
-                                        if (v.length < 6) {
-                                          return 'Minimum 6 characters';
-                                        }
-                                        return null;
-                                      },
-                                    ),
-                                    const SizedBox(height: 10),
-                                    Align(
-                                      alignment: Alignment.centerRight,
-                                      child: TextButton(
-                                        onPressed: () => context
-                                            .push(AppRoutes.forgotPassword),
-                                        style: TextButton.styleFrom(
-                                          foregroundColor: _LoginUi.teal,
-                                          padding: EdgeInsets.zero,
-                                          minimumSize: Size.zero,
-                                          tapTargetSize:
-                                              MaterialTapTargetSize.shrinkWrap,
-                                        ),
-                                        child: Text(
-                                          '${'forgot_password_title'.tr()}?',
-                                          style: const TextStyle(
-                                            fontFamily: 'Poppins',
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 20),
-                                    _PremiumSignInButton(
-                                      isLoading: isLoading,
-                                      onPressed: _login,
-                                    ),
-                                  ],
-                                ),
-                              ),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return SingleChildScrollView(
+                        physics: const BouncingScrollPhysics(),
+                        child: Container(
+                          constraints: BoxConstraints(
+                            minHeight: constraints.maxHeight,
+                          ),
+                          padding: const EdgeInsets.fromLTRB(22, 8, 22, 28),
+                          child: Center(
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 450),
+                              child: formWidget,
                             ),
-                            const SizedBox(height: 22),
-                            Material(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                              child: InkWell(
-                                onTap: _showLanguagePicker,
-                                borderRadius: BorderRadius.circular(16),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 18,
-                                    vertical: 14,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(
-                                      color: const Color(0xFFE2E8F0),
-                                    ),
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      const Icon(
-                                        Icons.translate_rounded,
-                                        size: 20,
-                                        color: _LoginUi.teal,
-                                      ),
-                                      const SizedBox(width: 10),
-                                      Text(
-                                        'select_language'.tr(),
-                                        style: const TextStyle(
-                                          fontFamily: 'Poppins',
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600,
-                                          color: _LoginUi.ink,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 6),
-                                      const Icon(
-                                        Icons.keyboard_arrow_down_rounded,
-                                        size: 22,
-                                        color: _LoginUi.teal,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
-                      ),
-                    ),
+                      );
+                    }
                   ),
                 ),
               ],
@@ -475,6 +486,7 @@ class _LoginScreenState extends State<LoginScreen>
   }
 }
 
+// ── Premium header with straight line ──────────────────────────────────
 // ── Premium header with straight line ──────────────────────────────────
 class _LoginHeader extends StatefulWidget {
   const _LoginHeader();
@@ -505,11 +517,16 @@ class _LoginHeaderState extends State<_LoginHeader>
   @override
   Widget build(BuildContext context) {
     final top = MediaQuery.paddingOf(context).top;
+    final size = MediaQuery.sizeOf(context);
+    final isTablet = size.width >= 600;
+
+    final targetHeight = size.height * 0.25;
+    final height = targetHeight.clamp(180.0, 260.0);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: SizedBox(
-        height: top + 180,
+        height: top + height,
         child: AnimatedBuilder(
           animation: _driftCtrl,
           builder: (context, _) {
@@ -532,103 +549,108 @@ class _LoginHeaderState extends State<_LoginHeader>
                     ),
                   ),
                   Positioned(
-                    top: top + 20 + math.sin(t) * 10,
+                    top: top + (isTablet ? 30 : 20) + math.sin(t) * 10,
                     right: -30,
-                    child: const _Orb(
-                      size: 110,
-                      color: Color.fromARGB(20, 255, 255, 255),
+                    child: _Orb(
+                      size: isTablet ? 130 : 110,
+                      color: const Color.fromARGB(20, 255, 255, 255),
                     ),
                   ),
                   Positioned(
-                    bottom: 40,
+                    bottom: isTablet ? 50 : 40,
                     left: -40 + math.cos(t) * 12,
-                    child: const _Orb(
-                      size: 80,
-                      color: Color.fromARGB(30, 255, 255, 255),
+                    child: _Orb(
+                      size: isTablet ? 90 : 80,
+                      color: const Color.fromARGB(30, 255, 255, 255),
                     ),
                   ),
                   SafeArea(
                     bottom: false,
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 72,
-                            height: 72,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(22),
-                              gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                  Colors.white.withValues(alpha: 0.3),
-                                  Colors.white.withValues(alpha: 0.1),
-                                ],
-                              ),
-                              border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.45),
-                                width: 1.5,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.2),
-                                  blurRadius: 24,
-                                  offset: const Offset(0, 10),
+                    child: Center(
+                      child: SingleChildScrollView(
+                        physics: const NeverScrollableScrollPhysics(),
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: isTablet ? 80 : 72,
+                                height: isTablet ? 80 : 72,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(isTablet ? 24 : 22),
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [
+                                      Colors.white.withValues(alpha: 0.3),
+                                      Colors.white.withValues(alpha: 0.1),
+                                    ],
+                                  ),
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.45),
+                                    width: 1.5,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.2),
+                                      blurRadius: 24,
+                                      offset: const Offset(0, 10),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                            child: const Icon(
-                              Icons.directions_bus_rounded,
-                              size: 40,
-                              color: Colors.white,
-                            ),
-                          ),
-                          const SizedBox(height: 14),
-                          ShaderMask(
-                            shaderCallback: (bounds) => const LinearGradient(
-                              colors: [Colors.white, Color(0xFFFCE7F3)],
-                            ).createShader(bounds),
-                            child: Text(
-                              'app_name'.tr(),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                fontFamily: 'Poppins',
-                                fontSize: 24,
-                                fontWeight: FontWeight.w800,
-                                color: Colors.white,
-                                height: 1.15,
+                                child: Icon(
+                                  Icons.directions_bus_rounded,
+                                  size: isTablet ? 44 : 40,
+                                  color: Colors.white,
+                                ),
                               ),
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.2),
+                              SizedBox(height: isTablet ? 16 : 14),
+                              ShaderMask(
+                                shaderCallback: (bounds) => const LinearGradient(
+                                  colors: [Colors.white, Color(0xFFFCE7F3)],
+                                ).createShader(bounds),
+                                child: Text(
+                                  'app_name'.tr(),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontSize: isTablet ? 28 : 24,
+                                    fontWeight: FontWeight.w800,
+                                    color: Colors.white,
+                                    height: 1.15,
+                                  ),
+                                ),
                               ),
-                            ),
-                            child: const Text(
-                              'Driver Portal',
-                              style: TextStyle(
-                                fontFamily: 'Poppins',
-                                fontSize: 11,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.white,
-                                letterSpacing: 0.5,
+                              const SizedBox(height: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.12),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.2),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Driver Portal',
+                                  style: TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.white,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
                               ),
-                            ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
                     ),
                   ),
